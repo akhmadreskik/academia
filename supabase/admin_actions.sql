@@ -1,5 +1,5 @@
 -- Admin-only updates for assessment components and permanent student deletion.
--- Run once in Supabase SQL Editor for the project used by this app.
+-- Jalankan di SQL Editor proyek Supabase yang dipakai aplikasi.
 
 alter table public.assessment_components enable row level security;
 
@@ -8,6 +8,32 @@ on public.assessment_components;
 
 create policy "assessment_components_admin_update"
 on public.assessment_components
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+-- Izinkan Administrator mengedit data siswa.
+alter table public.students enable row level security;
+
+drop policy if exists "students_admin_update"
+on public.students;
+
+create policy "students_admin_update"
+on public.students
+for update
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
+-- Diperlukan saat Administrator memindahkan siswa ke kelas lain.
+alter table public.student_class_history enable row level security;
+
+drop policy if exists "student_class_history_admin_update"
+on public.student_class_history;
+
+create policy "student_class_history_admin_update"
+on public.student_class_history
 for update
 to authenticated
 using (public.is_admin())
@@ -43,3 +69,5 @@ $$;
 
 revoke all on function public.delete_student_permanently(uuid) from public, anon;
 grant execute on function public.delete_student_permanently(uuid) to authenticated;
+
+notify pgrst, 'reload schema';
