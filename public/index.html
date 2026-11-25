@@ -3,6 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#21103c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <title>ACADEMIA — Academic Management System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -97,8 +104,9 @@
         </section>
 
         <section id="page-classes" class="page hidden">
-          <div class="flex justify-between items-center mb-4"><div><h1 class="text-2xl font-bold">Manajemen Kelas</h1><p class="muted text-sm">Daftar kelas dinamis; perubahan tidak memerlukan edit HTML.</p></div><button id="addClassBtn" class="btn primary">＋ Tambah Kelas</button></div>
+          <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h1 class="text-2xl font-bold">Manajemen Kelas</h1><p class="muted text-sm">Tambah, ubah nama dan tahun ajaran, atur status, atau hapus kelas yang belum memiliki data terkait.</p></div><button id="addClassBtn" class="btn primary" type="button">＋ Tambah Kelas</button></div>
           <div class="card p-4 overflow-x-auto"><table class="w-full"><thead><tr><th>Kelas</th><th>Tahun Ajaran</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="classesBody"></tbody></table></div>
+          <div class="card p-4 mt-4"><div class="flex flex-wrap justify-between items-center gap-3"><div><h2 class="font-bold">Mata Pelajaran</h2><p class="muted text-sm">Daftar mata pelajaran yang tersedia untuk nilai, absensi, dan laporan.</p></div><button id="addSubjectBtn" class="btn primary" type="button">＋ Tambah Mapel</button></div><div id="subjectsList" class="mt-3 flex flex-wrap gap-2"></div></div>
         </section>
 
         <section id="page-grades" class="page hidden">
@@ -155,7 +163,8 @@
     <div class="flex justify-end gap-2 mt-6"><button type="button" class="btn soft" data-close="studentDialog">Batal</button><button class="btn primary" type="submit">Simpan ke Cloud</button></div>
   </form>
 </dialog>
-<dialog id="classDialog"><form id="classForm" class="p-6"><div class="flex justify-between mb-4"><h2 class="font-bold">Tambah Kelas</h2><button type="button" data-close="classDialog">×</button></div><label class="text-sm">Nama kelas<input id="newClassName" class="field mt-1" placeholder="Contoh XI-7" required></label><label class="text-sm block mt-3">Tahun ajaran<input id="newClassYear" class="field mt-1" placeholder="2026/2027"></label><div class="flex justify-end mt-5"><button class="btn primary">Simpan Kelas</button></div></form></dialog>
+<dialog id="classDialog"><form id="classForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="classDialogTitle" class="font-bold">Tambah Kelas</h2><button type="button" class="text-xl" data-close="classDialog">×</button></div><input id="classId" type="hidden"><label class="text-sm">Nama kelas<input id="newClassName" class="field mt-1" placeholder="Contoh XI-7" required></label><label class="text-sm block mt-3">Tahun ajaran<input id="newClassYear" class="field mt-1" placeholder="Contoh 2026/2027 atau 2026"></label><div class="flex justify-end mt-5"><button id="saveClassBtn" type="submit" class="btn primary">Simpan Kelas</button></div></form></dialog>
+<dialog id="subjectDialog"><form id="subjectForm" class="p-6"><div class="flex justify-between mb-4"><h2 class="font-bold">Tambah Mata Pelajaran</h2><button type="button" class="text-xl" data-close="subjectDialog">×</button></div><label class="text-sm">Nama mata pelajaran<input id="newSubjectName" class="field mt-1" placeholder="Contoh Matematika" maxlength="120" required></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="subjectDialog">Batal</button><button type="submit" class="btn primary">Simpan Mapel</button></div></form></dialog>
 
 <dialog id="rosterScanDialog">
   <div class="p-6">
@@ -193,7 +202,7 @@ function showPage(page){
   document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   if(page==='dashboard')loadDashboard();
   if(page==='students')renderStudents();
-  if(page==='classes')renderClasses();
+  if(page==='classes'){renderClasses();renderSubjects();}
   if(page==='grades')prepareGrades();
   if(page==='attendance')prepareAttendance();
   if(page==='notifications')loadNotifications();
@@ -313,19 +322,30 @@ async function loadStudents(){
 function renderStudents(){
   const q=($('studentSearch')?.value||'').toLowerCase(),cl=$('studentClassFilter')?.value||'',st=$('studentStatusFilter')?.value??'active';
   const rows=students.filter(s=>(!q||[s.nis,s.nisn,s.full_name].join(' ').toLowerCase().includes(q))&&(!cl||s.current_class_id===cl)&&(!st||s.status===st));
-  $('studentsBody').innerHTML=rows.map(s=>`<tr><td>${escapeHtml(s.nis)}</td><td>${escapeHtml(s.nisn||'—')}</td><td class="font-semibold">${escapeHtml(s.full_name)}</td><td>${escapeHtml(s.classes?.name||'—')}</td><td><span class="pill">${s.status}</span></td><td><button class="text-violet-700 font-semibold mr-2" data-edit="${s.id}">Edit</button>${s.status==='active'?`<button class="text-rose-600 mr-2" data-archive="${s.id}">Arsip</button>`:''}${profile?.role==='administrator'?`<button class="text-rose-700 font-semibold" data-delete-student="${s.id}">Hapus</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="text-center muted">Belum ada data siswa.</td></tr>';
-  document.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>editStudent(b.dataset.edit));
-  document.querySelectorAll('[data-archive]').forEach(b=>b.onclick=()=>archiveStudent(b.dataset.archive));
-  document.querySelectorAll('[data-delete-student]').forEach(b=>b.onclick=()=>deleteStudentPermanently(b.dataset.deleteStudent));
+  $('studentsBody').innerHTML=rows.map(s=>`<tr><td>${escapeHtml(s.nis)}</td><td>${escapeHtml(s.nisn||'—')}</td><td class="font-semibold">${escapeHtml(s.full_name)}</td><td>${escapeHtml(s.classes?.name||'—')}</td><td><span class="pill">${s.status}</span></td><td><button type="button" class="text-violet-700 font-semibold mr-2" data-edit="${s.id}">Edit</button>${s.status==='active'?`<button type="button" class="text-rose-600 mr-2" data-archive="${s.id}">Arsip</button>`:''}${profile?.role==='administrator'?`<button type="button" class="text-rose-700 font-semibold" data-delete-student="${s.id}">Hapus</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="text-center muted">Belum ada data siswa.</td></tr>';
 }
+// Delegasi klik pada tbody tetap aktif walau baris siswa dirender ulang.
+$('studentsBody').addEventListener('click',event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.hasAttribute('data-edit'))return editStudent(button.dataset.edit);
+  if(button.hasAttribute('data-archive'))return archiveStudent(button.dataset.archive);
+  if(button.hasAttribute('data-delete-student'))return deleteStudentPermanently(button.dataset.deleteStudent);
+});
 $('studentSearch').addEventListener('input',renderStudents);$('studentClassFilter').addEventListener('change',renderStudents);$('studentStatusFilter').addEventListener('change',renderStudents);
 $('addStudentBtn').onclick=()=>{ $('studentForm').reset();$('studentId').value='';$('studentDialogTitle').textContent='Tambah Siswa';fillSelect('fClass',classes.filter(x=>x.is_active));$('studentDialog').showModal();};
 async function editStudent(id){
-  const s=students.find(x=>x.id===id);if(!s)return;
+  let s=students.find(x=>x.id===id);
+  if(!s){
+    const {data,error}=await db.from('students').select('id,nis,nisn,full_name,gender,birth_date,phone,status,current_class_id').eq('id',id).maybeSingle();
+    if(error)return alertBox('Gagal membuka data siswa: '+error.message,'error');
+    s=data;
+  }
+  if(!s)return alertBox('Data siswa tidak ditemukan. Muat ulang daftar siswa lalu coba lagi.','error');
   $('studentId').value=s.id;$('fNis').value=s.nis;$('fNisn').value=s.nisn||'';$('fName').value=s.full_name;
   fillSelect('fClass',classes.filter(x=>x.is_active));$('fClass').value=s.current_class_id||'';
   $('fGender').value=s.gender||'';$('fBirth').value=s.birth_date||'';$('fPhone').value=s.phone||'';
-  $('studentDialogTitle').textContent='Edit Siswa';$('studentDialog').showModal();
+  $('studentDialogTitle').textContent='Edit Siswa';
+  try{$('studentDialog').showModal();}catch(error){alertBox('Form edit siswa tidak dapat dibuka: '+error.message,'error');}
 }
 $('studentForm').addEventListener('submit',async e=>{
   e.preventDefault();
@@ -343,8 +363,9 @@ $('studentForm').addEventListener('submit',async e=>{
       if(error){alertBox('Perubahan kelas gagal: '+error.message,'error');return;}
       delete payload.current_class_id;
     }
-    const {error}=await db.from('students').update(payload).eq('id',id);
+    const {data:updated,error}=await db.from('students').update(payload).eq('id',id).select('id').maybeSingle();
     if(error){alertBox('Update gagal: '+error.message,'error');return;}
+    if(!updated){alertBox('Data siswa tidak berubah. Periksa izin edit Administrator di Supabase, lalu jalankan ulang supabase/admin_actions.sql.','error');return;}
   }else{
     const {data,error}=await db.from('students').insert({...payload,created_by:currentUser.id}).select('id').single();
     if(error){alertBox('Insert gagal: '+error.message,'error');return;}
@@ -355,8 +376,8 @@ $('studentForm').addEventListener('submit',async e=>{
 });
 async function archiveStudent(id){
   const s=students.find(x=>x.id===id);if(!s||!confirm(`Arsipkan ${s.full_name}?`))return;
-  const {error}=await db.from('students').update({status:'archived'}).eq('id',id);
-  if(error)alertBox('Gagal mengarsipkan: '+error.message,'error');else{await loadStudents();alertBox('Siswa diarsipkan.','success');}
+  const {data,error}=await db.from('students').update({status:'archived'}).eq('id',id).select('id').maybeSingle();
+  if(error)alertBox('Gagal mengarsipkan: '+error.message,'error');else if(!data)alertBox('Siswa tidak berubah. Periksa izin update di Supabase.','error');else{await loadStudents();alertBox('Siswa diarsipkan.','success');}
 }
 async function deleteStudentPermanently(id){
   const s=students.find(x=>x.id===id);if(!s)return;
@@ -369,25 +390,84 @@ async function deleteStudentPermanently(id){
   alertBox('Data siswa beserta data terkait berhasil dihapus permanen.','success');
 }
 function renderClasses(){
-  $('classesBody').innerHTML=classes.map(c=>`<tr><td class="font-semibold">${escapeHtml(c.name)}</td><td>${escapeHtml(c.academic_year||'—')}</td><td>${c.is_active?'Aktif':'Nonaktif'}</td><td>${c.is_active?`<button class="text-rose-600" data-disable-class="${c.id}">Nonaktifkan</button>`:'—'}</td></tr>`).join('');
-  document.querySelectorAll('[data-disable-class]').forEach(b=>b.onclick=()=>deactivateClass(b.dataset.disableClass));
+  $('classesBody').innerHTML=classes.map(c=>`<tr><td class="font-semibold">${escapeHtml(c.name)}</td><td>${escapeHtml(c.academic_year||'—')}</td><td><span class="pill">${c.is_active?'Aktif':'Nonaktif'}</span></td><td>${profile?.role==='administrator'?`<div class="flex flex-wrap gap-x-3 gap-y-1"><button type="button" class="text-violet-700 font-semibold" data-class-edit="${c.id}">Edit</button><button type="button" class="text-rose-600" data-class-toggle="${c.id}" data-next-active="${!c.is_active}">${c.is_active?'Nonaktifkan':'Aktifkan'}</button><button type="button" class="text-rose-700 font-semibold" data-class-delete="${c.id}">Hapus</button></div>`:'—'}</td></tr>`).join('')||'<tr><td colspan="4" class="muted text-center">Belum ada kelas.</td></tr>';
   $('addClassBtn').classList.toggle('hidden',profile?.role!=='administrator');
 }
-$('addClassBtn').onclick=()=>{$('classForm').reset();$('classDialog').showModal();};
+$('classesBody').addEventListener('click',event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.hasAttribute('data-class-edit'))return openClassDialog(classes.find(c=>c.id===button.dataset.classEdit));
+  if(button.hasAttribute('data-class-toggle'))return setClassActive(button.dataset.classToggle,button.dataset.nextActive==='true');
+  if(button.hasAttribute('data-class-delete'))return deleteClassPermanently(button.dataset.classDelete);
+});
+function openClassDialog(classItem=null){
+  $('classForm').reset();$('classId').value=classItem?.id||'';
+  $('classDialogTitle').textContent=classItem?'Edit Kelas':'Tambah Kelas';
+  $('saveClassBtn').textContent=classItem?'Simpan Perubahan':'Simpan Kelas';
+  if(classItem){$('newClassName').value=classItem.name;$('newClassYear').value=classItem.academic_year||'';}
+  $('classDialog').showModal();
+}
+$('addClassBtn').onclick=()=>openClassDialog();
 $('classForm').addEventListener('submit',async e=>{
   e.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengelola kelas.','error');
-  const name=$('newClassName').value.trim().toUpperCase(),year=$('newClassYear').value.trim()||null;
+  const id=$('classId').value,name=$('newClassName').value.trim().toUpperCase(),year=$('newClassYear').value.trim()||null;
   if(!/^(X|XI|XII)-[0-9]{1,2}$/.test(name))return alertBox('Format kelas tidak valid. Contoh XI-7.','error');
-  const {error}=await db.from('classes').insert({name,academic_year:year});
-  if(error)return alertBox('Gagal menambah kelas: '+error.message,'error');
-  $('classDialog').close();await loadMasterData();renderClasses();alertBox('Kelas '+name+' berhasil ditambahkan.','success');
+  if(classes.some(c=>c.id!==id&&String(c.name).toLowerCase()===name.toLowerCase()))return alertBox('Nama kelas tersebut sudah digunakan.','error');
+  let data,error;
+  if(id){({data,error}=await db.from('classes').update({name,academic_year:year}).eq('id',id).select('id').maybeSingle());}
+  else{({data,error}=await db.from('classes').insert({name,academic_year:year,is_active:true}).select('id').maybeSingle());}
+  if(error)return alertBox((id?'Gagal mengubah kelas: ':'Gagal menambah kelas: ')+error.message,'error');
+  if(!data)return alertBox('Tidak ada perubahan tersimpan. Periksa izin Administrator untuk mengelola kelas di Supabase.','error');
+  $('classDialog').close();await loadMasterData();renderClasses();renderSubjects();alertBox(id?'Perubahan kelas berhasil disimpan.':'Kelas '+name+' berhasil ditambahkan.','success');
 });
-async function deactivateClass(id){
+async function setClassActive(id,isActive){
   const c=classes.find(x=>x.id===id);if(!c||profile?.role!=='administrator')return;
-  if(!confirm(`Nonaktifkan kelas ${c.name}? Data siswa dan riwayat tidak dihapus.`))return;
-  const {error}=await db.from('classes').update({is_active:false}).eq('id',id);
-  if(error)return alertBox('Gagal: '+error.message,'error');await loadMasterData();renderClasses();
+  if(!isActive&&!confirm(`Nonaktifkan kelas ${c.name}? Data siswa dan riwayat tetap disimpan.`))return;
+  const {data,error}=await db.from('classes').update({is_active:isActive}).eq('id',id).select('id').maybeSingle();
+  if(error)return alertBox('Gagal mengubah status kelas: '+error.message,'error');
+  if(!data)return alertBox('Status kelas tidak berubah. Periksa izin Administrator di Supabase.','error');
+  await loadMasterData();renderClasses();renderSubjects();alertBox(isActive?'Kelas diaktifkan.':'Kelas dinonaktifkan.','success');
 }
+async function deleteClassPermanently(id){
+  const c=classes.find(x=>x.id===id);if(!c||profile?.role!=='administrator')return;
+  if(!confirm(`Hapus kelas ${c.name} secara permanen? Kelas yang memiliki siswa, riwayat, absensi, atau komponen nilai tidak dapat dihapus.`))return;
+  const checks=await Promise.all([
+    db.from('students').select('id',{count:'exact',head:true}).eq('current_class_id',id),
+    db.from('student_class_history').select('id',{count:'exact',head:true}).eq('class_id',id),
+    db.from('attendance_sessions').select('id',{count:'exact',head:true}).eq('class_id',id),
+    db.from('assessment_components').select('id',{count:'exact',head:true}).eq('class_id',id)
+  ]);
+  const failed=checks.find(result=>result.error);
+  if(failed)return alertBox('Tidak dapat memeriksa penggunaan kelas: '+failed.error.message,'error');
+  const [studentsCheck,historyCheck,attendanceCheck,componentsCheck]=checks;
+  const usedBy=[];
+  if(studentsCheck.count)usedBy.push(`${studentsCheck.count} siswa`);
+  if(historyCheck.count)usedBy.push(`${historyCheck.count} riwayat kelas`);
+  if(attendanceCheck.count)usedBy.push(`${attendanceCheck.count} sesi absensi`);
+  if(componentsCheck.count)usedBy.push(`${componentsCheck.count} komponen nilai`);
+  if(usedBy.length)return alertBox(`Kelas ${c.name} masih digunakan oleh ${usedBy.join(', ')}. Pindahkan data terkait atau nonaktifkan kelas.`, 'error');
+  const {data,error}=await db.from('classes').delete().eq('id',id).select('id').maybeSingle();
+  if(error)return alertBox('Gagal menghapus kelas: '+error.message,'error');
+  if(!data)return alertBox('Kelas tidak terhapus. Periksa izin Hapus kelas Administrator di Supabase.','error');
+  await loadMasterData();renderClasses();renderSubjects();alertBox(`Kelas ${c.name} berhasil dihapus.`,'success');
+}
+function renderSubjects(){
+  const list=$('subjectsList');if(!list)return;
+  list.innerHTML=subjects.map(s=>`<span class="pill px-3 py-2">${escapeHtml(s.name)}${s.is_active===false?' · Nonaktif':''}</span>`).join('')||'<span class="muted text-sm">Belum ada mata pelajaran.</span>';
+  $('addSubjectBtn').classList.toggle('hidden',profile?.role!=='administrator');
+}
+$('addSubjectBtn').onclick=()=>{
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah mata pelajaran.','error');
+  $('subjectForm').reset();$('subjectDialog').showModal();
+};
+$('subjectForm').addEventListener('submit',async e=>{
+  e.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah mata pelajaran.','error');
+  const name=$('newSubjectName').value.trim();if(!name)return alertBox('Nama mata pelajaran wajib diisi.','error');
+  if(subjects.some(s=>String(s.name).trim().toLowerCase()===name.toLowerCase()))return alertBox('Mata pelajaran tersebut sudah terdaftar.','error');
+  const {data,error}=await db.from('subjects').insert({name,is_active:true}).select('id').maybeSingle();
+  if(error)return alertBox('Gagal menambah mata pelajaran: '+error.message,'error');
+  if(!data)return alertBox('Mata pelajaran tidak tersimpan. Periksa izin Administrator di Supabase.','error');
+  $('subjectDialog').close();await loadMasterData();renderSubjects();alertBox(`Mata pelajaran ${name} berhasil ditambahkan.`,'success');
+});
 function resetComponentEditor(){
   editingComponentId=null;$('componentName').value='';$('componentWeight').value='';$('addComponentBtn').textContent='Tambah komponen';$('cancelComponentEditBtn').classList.add('hidden');$('componentEditorStatus').textContent='';
 }
@@ -406,8 +486,10 @@ $('addComponentBtn').onclick=async()=>{
   if(!subject||!name||!Number.isFinite(weight)||weight<=0||weight>100)return alertBox('Pilih mata pelajaran, isi nama komponen, dan masukkan bobot antara 0 sampai 100%.','error');
   let error;
   if(editingComponentId){
-    ({error}=await db.from('assessment_components').update({name,weight}).eq('id',editingComponentId));
+    const {data:updated,error:updateError}=await db.from('assessment_components').update({name,weight}).eq('id',editingComponentId).select('id').maybeSingle();
+    error=updateError;
     if(error)return alertBox('Gagal mengubah komponen: '+error.message,'error');
+    if(!updated)return alertBox('Komponen tidak berubah. Periksa izin edit Administrator di Supabase, lalu jalankan ulang supabase/admin_actions.sql.','error');
     resetComponentEditor();alertBox('Komponen berhasil diperbarui.','success');
   }else{
     ({error}=await db.from('assessment_components').insert({name,subject_id:subject,class_id:classId||null,weight,academic_year:year,semester,created_by:currentUser.id}));
@@ -511,6 +593,11 @@ function subscribeRealtime(){
     .subscribe();
 }
 db.auth.getSession().then(({data})=>{if(data.session)startApp(data.session.user);});
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(error=>console.warn('Service worker tidak dapat dipasang:',error)));
+}
 </script>
 </body>
 </html>
+
+Filter file
