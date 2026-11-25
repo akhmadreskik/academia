@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <title>ACADEMIA — Academic Management System</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -101,9 +102,9 @@
         </section>
 
         <section id="page-students" class="page hidden">
-          <div class="flex flex-wrap justify-between gap-3 mb-4"><div><h1 class="text-2xl font-bold">Manajemen Siswa</h1><p class="muted text-sm">Tambah satu per satu, impor banyak siswa dari CSV, ubah, arsipkan, dan pindahkan kelas.</p></div><div class="flex flex-wrap gap-2"><button id="downloadStudentTemplateBtn" class="btn soft" type="button">Unduh Template CSV</button><button id="importStudentsBtn" class="btn soft" type="button">Impor CSV</button><input id="studentsCsvInput" class="hidden" type="file" accept=".csv,text/csv"><button id="scanRosterBtn" class="btn soft" type="button">📷 Baca Foto Absensi</button><button id="addStudentBtn" class="btn primary" type="button">＋ Tambah Siswa</button></div></div>
-          <p class="muted text-xs mb-1">Isi satu baris untuk setiap siswa. NIS, Nama Lengkap, dan Kelas wajib; NISN, Jenis Kelamin, Tanggal Lahir, dan Kontak boleh kosong.</p>
-          <p class="muted text-xs mb-3">Baris contoh bertanda NIS CONTOH otomatis dilewati. Isi Jenis Kelamin dengan L/P dan Tanggal Lahir seperti 2008-05-12. Nama kelas harus sama dengan kelas aktif.</p>
+          <div class="flex flex-wrap justify-between gap-3 mb-4"><div><h1 class="text-2xl font-bold">Manajemen Siswa</h1><p class="muted text-sm">Tambah satu per satu atau impor banyak siswa dari Excel.</p></div><div class="flex flex-wrap gap-2"><button id="downloadStudentTemplateBtn" class="btn soft" type="button">Unduh Template Excel</button><button id="importStudentsBtn" class="btn soft" type="button">Impor Excel</button><input id="studentsCsvInput" class="hidden" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"><button id="scanRosterBtn" class="btn soft" type="button">📷 Baca Foto Absensi</button><button id="addStudentBtn" class="btn primary" type="button">＋ Tambah Siswa</button></div></div>
+          <p class="muted text-xs mb-1">Unduh template Excel. Isi satu baris untuk setiap siswa; NIS, Nama Lengkap, dan Kelas wajib. Kolom lainnya boleh kosong.</p>
+          <p class="muted text-xs mb-3">Template berisi lembar Petunjuk dan Data Siswa. Baris contoh bertanda NIS CONTOH otomatis dilewati. Nama kelas harus sama dengan kelas aktif.</p>
           <p id="studentCsvStatus" class="hidden text-sm mb-3" aria-live="polite"></p>
           <div class="card p-4">
             <div class="grid md:grid-cols-3 gap-3 mb-4"><input id="studentSearch" class="field" placeholder="Cari nama / NIS / NISN"><select id="studentClassFilter" class="field"><option value="">Semua kelas</option></select><select id="studentStatusFilter" class="field"><option value="active">Siswa aktif</option><option value="archived">Diarsipkan</option><option value="">Semua status</option></select></div>
@@ -124,7 +125,7 @@
           </div>
           <div class="card p-4 mb-4"><h2 class="font-bold mb-3">Komponen penilaian</h2><div class="grid md:grid-cols-5 gap-2"><input id="componentName" class="field" placeholder="Nama komponen, contoh Tugas 1"><select id="componentCategory" class="field"><option value="tugas">Kategori: Tugas</option><option value="uh">Kategori: UH</option><option value="ujian_akhir">Kategori: Ujian Akhir</option></select><input id="componentWeight" class="field" type="number" min="0.01" max="100" step="0.01" placeholder="Bobot (%)"><button id="addComponentBtn" class="btn primary" type="button">Tambah komponen</button><button id="cancelComponentEditBtn" class="btn soft hidden" type="button">Batal edit</button></div><div id="componentEditorStatus" class="text-xs muted mt-2" aria-live="polite"></div><div id="componentsList" class="mt-3 text-sm"></div><p class="text-xs muted mt-2">Kelompokkan setiap komponen sebagai Tugas, UH, atau Ujian Akhir. Hapus akan menonaktifkan komponen; nilai lama tetap tersimpan di Supabase.</p></div>
           <div class="card p-4 overflow-x-auto"><div class="flex justify-between items-center mb-3"><h2 class="font-bold">Input nilai tahun berjalan</h2><button id="loadGradesBtn" class="btn soft">Muat data</button></div><table class="w-full"><thead id="gradesHead"></thead><tbody id="gradesBody"></tbody></table><p class="text-xs muted mt-3">Nilai Asli menampilkan rata-rata kategori Tugas, UH, dan Ujian Akhir setelah ketiganya memiliki nilai. Nilai Akhir mengikuti bobot komponen yang sudah diatur.</p></div>
-          <div class="card p-4 mt-4 overflow-x-auto"><div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h2 class="font-bold">Legger Tahun Lalu</h2><p class="muted text-sm">Data historis sebagai acuan; tidak masuk ke perhitungan nilai tahun berjalan.</p><p class="muted text-xs mt-1">Satu baris untuk satu siswa, mapel, semester, dan tahun ajaran. Nilai 0–100; semester isi 1 atau 2. Baris contoh bertanda NIS CONTOH otomatis dilewati.</p></div><div class="flex flex-wrap gap-2"><button id="downloadLedgerTemplateBtn" class="btn soft" type="button">Unduh Template CSV</button><button id="importLedgerBtn" class="btn soft" type="button">Impor CSV</button><button id="addLedgerBtn" class="btn primary" type="button">＋ Tambah Legger</button><input id="ledgerCsvInput" class="hidden" type="file" accept=".csv,text/csv"></div></div><div class="grid sm:grid-cols-2 gap-3 mb-3"><input id="ledgerSearch" class="field" placeholder="Cari NIS, nama, kelas, atau mapel"><select id="ledgerYearFilter" class="field"><option value="">Semua tahun ajaran</option></select></div><table class="w-full"><thead><tr><th>Tahun Ajaran</th><th>Semester</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>Mapel</th><th>Nilai Asli</th><th>Nilai Akhir</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="ledgerBody"></tbody></table></div>
+          <div class="card p-4 mt-4 overflow-x-auto"><div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h2 class="font-bold">Legger Tahun Lalu</h2><p class="muted text-sm">Data historis sebagai acuan; tidak masuk ke perhitungan nilai tahun berjalan.</p><p class="muted text-xs mt-1">Isi satu baris per siswa, mapel, semester, dan tahun ajaran. Nilai 0–100; semester isi 1 atau 2. Baris contoh bertanda NIS CONTOH otomatis dilewati.</p></div><div class="flex flex-wrap gap-2"><button id="downloadLedgerTemplateBtn" class="btn soft" type="button">Unduh Template Excel</button><button id="importLedgerBtn" class="btn soft" type="button">Impor Excel</button><button id="addLedgerBtn" class="btn primary" type="button">＋ Tambah Legger</button><input id="ledgerCsvInput" class="hidden" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"></div></div><div class="grid sm:grid-cols-2 gap-3 mb-3"><input id="ledgerSearch" class="field" placeholder="Cari NIS, nama, kelas, atau mapel"><select id="ledgerYearFilter" class="field"><option value="">Semua tahun ajaran</option></select></div><table class="w-full"><thead><tr><th>Tahun Ajaran</th><th>Semester</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>Mapel</th><th>Nilai Asli</th><th>Nilai Akhir</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="ledgerBody"></tbody></table></div>
         </section>
 
         <section id="page-soal-uh" class="page hidden">
@@ -407,10 +408,17 @@ $('studentsBody').addEventListener('click',event=>{
   if(button.hasAttribute('data-delete-student'))return deleteStudentPermanently(button.dataset.deleteStudent);
 });
 $('studentSearch').addEventListener('input',renderStudents);$('studentClassFilter').addEventListener('change',renderStudents);$('studentStatusFilter').addEventListener('change',renderStudents);
+function downloadExcelTemplate(filename,title,dataSheetName,headers,sample,widths,instructions){
+  if(!window.XLSX)throw new Error('Fitur Excel belum termuat. Periksa koneksi internet lalu muat ulang halaman.');
+  const workbook=XLSX.utils.book_new();
+  const guideRows=[[`ACADEMIA — ${title}`],['Petunjuk pengisian'],...instructions.map((instruction,index)=>[String(index+1),instruction])];
+  const guideSheet=XLSX.utils.aoa_to_sheet(guideRows);guideSheet['!cols']=[{wch:8},{wch:92}];
+  const dataSheet=XLSX.utils.aoa_to_sheet([headers,sample]);dataSheet['!cols']=widths.map(wch=>({wch}));dataSheet['!autofilter']={ref:`A1:${XLSX.utils.encode_col(headers.length-1)}1000`};
+  XLSX.utils.book_append_sheet(workbook,guideSheet,'Petunjuk');XLSX.utils.book_append_sheet(workbook,dataSheet,dataSheetName);
+  XLSX.writeFile(workbook,filename);
+}
 $('downloadStudentTemplateBtn').onclick=()=>{
-  const csv='\uFEFFNIS,NISN,Nama Lengkap,Kelas,Jenis Kelamin (L/P),Tanggal Lahir (YYYY-MM-DD),Kontak\r\nCONTOH,1234567890,Budi Santoso,XI-1,L,2008-05-12,08123456789\r\n';
-  const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));link.download='template_import_siswa.csv';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
-  showStudentCsvStatus('Template berisi satu baris contoh. Ganti atau hapus baris dengan NIS CONTOH; baris itu otomatis dilewati. NIS, Nama Lengkap, dan Kelas wajib. Jenis kelamin isi L/P; tanggal lahir gunakan format YYYY-MM-DD. Kolom lain boleh dikosongkan.',false);
+  try{downloadExcelTemplate('Template_Impor_Siswa.xlsx','Template Impor Siswa','Data Siswa',['NIS','NISN','Nama Lengkap','Kelas','Jenis Kelamin (L/P)','Tanggal Lahir (YYYY-MM-DD)','Kontak'],['CONTOH','1234567890','Budi Santoso','XI-1','L','2008-05-12','08123456789'],[20,20,32,18,26,30,24],['Isi data pada lembar Data Siswa dan jangan ubah judul kolom.','Satu baris untuk satu siswa. Ganti baris contoh atau hapus; NIS CONTOH otomatis dilewati.','Wajib: NIS, Nama Lengkap, dan Kelas. NISN, Jenis Kelamin, Tanggal Lahir, dan Kontak boleh kosong.','Nama Kelas harus sama dengan kelas aktif di aplikasi. Jenis Kelamin isi L atau P.','Tanggal lahir gunakan format YYYY-MM-DD. Jika Excel mengubah tampilan tanggal, aplikasi tetap membaca tanggalnya.','Jika NIS/NISN/Kontak diawali nol, format sel sebagai Teks sebelum mengisi.','Simpan sebagai .xlsx, lalu unggah melalui tombol Impor Excel.']);showStudentCsvStatus('Template Excel berhasil dibuat. Buka lembar Petunjuk untuk langkah pengisian.',false);}catch(error){showStudentCsvStatus(error.message,true);}
 };
 $('importStudentsBtn').onclick=()=>{if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengimpor siswa.','error');$('studentsCsvInput').click();};
 function showStudentCsvStatus(message,isError=false){const el=$('studentCsvStatus');el.textContent=message;el.className='text-sm mb-3 '+(isError?'text-red-700':'text-emerald-700');el.classList.remove('hidden');}
@@ -420,11 +428,11 @@ $('studentsCsvInput').addEventListener('change',async event=>{
   const button=$('importStudentsBtn');button.disabled=true;
   try{
     if(profile?.role!=='administrator')throw new Error('Hanya Administrator yang dapat mengimpor siswa.');
-    const csvRows=parseCsvRows(await file.text());if(csvRows.length<2)throw new Error('CSV kosong atau hanya berisi judul kolom.');
+    const csvRows=await readSpreadsheetRows(file,'Data Siswa');if(csvRows.length<2)throw new Error('File Excel kosong atau belum memiliki baris siswa.');
     const headers=csvRows.shift().map(normalizeCsvHeader);
     const columns={nis:studentCsvColumn(headers,['nis']),nisn:studentCsvColumn(headers,['nisn']),name:studentCsvColumn(headers,['nama','namasiswa','namalengkap','fullname']),className:studentCsvColumn(headers,['kelas','namakelas','classname']),gender:studentCsvColumn(headers,['jeniskelamin','jeniskelaminlp','gender']),birth:studentCsvColumn(headers,['tanggallahir','tanggallahiryyyymmdd','birthdate']),phone:studentCsvColumn(headers,['kontak','telepon','phone'])};
     const missing=['nis','name','className'].filter(key=>columns[key]<0);
-    if(missing.length)throw new Error('Kolom wajib belum lengkap. Gunakan template CSV: nis, nama, kelas.');
+    if(missing.length)throw new Error('Judul kolom pada lembar Data Siswa tidak cocok. Unduh dan gunakan Template Excel ACADEMIA.');
     const activeClasses=classes.filter(item=>item.is_active),classMap=new Map(activeClasses.map(item=>[item.name.trim().toLowerCase(),item]));
     if(!activeClasses.length)throw new Error('Belum ada kelas aktif. Tambahkan kelas sebelum mengimpor siswa.');
     const candidates=[],problems=[];let exampleSkipped=0;
@@ -434,17 +442,17 @@ $('studentsCsvInput').addEventListener('change',async event=>{
       if(nis.toLowerCase()==='contoh'){exampleSkipped++;return;}
       const rawGender=get('gender').toLowerCase();let gender=null;
       if(rawGender){if(['l','laki-laki','laki laki','male'].includes(rawGender))gender='L';else if(['p','perempuan','female'].includes(rawGender))gender='P';else problems.push(`baris ${rowNumber}: jenis kelamin harus L atau P`);}
-      const birth_date=get('birth');if(birth_date){const parsedDate=new Date(birth_date+'T00:00:00Z');if(!/^\d{4}-\d{2}-\d{2}$/.test(birth_date)||Number.isNaN(parsedDate.getTime())||parsedDate.toISOString().slice(0,10)!==birth_date)problems.push(`baris ${rowNumber}: tanggal lahir harus tanggal valid berformat YYYY-MM-DD`);}
+      const birthValue=get('birth'),birth_date=birthValue?normalizeStudentBirthDate(birthValue):null;if(birthValue&&!birth_date)problems.push(`baris ${rowNumber}: tanggal lahir tidak valid`);
       if(!nis)problems.push(`baris ${rowNumber}: NIS kosong`);if(!name)problems.push(`baris ${rowNumber}: nama kosong`);if(!className)problems.push(`baris ${rowNumber}: kelas kosong`);else if(!classItem)problems.push(`baris ${rowNumber}: kelas "${className}" tidak ditemukan atau nonaktif`);
       if(nis&&name&&classItem)candidates.push({nis,nisn,full_name:name,gender,birth_date:birth_date||null,phone:get('phone')||null,current_class_id:classItem.id,status:'active',created_by:currentUser.id});
     });
-    if(problems.length)throw new Error('Perbaiki isi CSV terlebih dahulu. '+problems.slice(0,6).join('; '));
+    if(problems.length)throw new Error('Perbaiki isi Excel terlebih dahulu. '+problems.slice(0,6).join('; '));
     const seenNis=new Set(),seenNisn=new Set(),existingNis=new Set(students.map(item=>String(item.nis||'').trim().toLowerCase())),existingNisn=new Set(students.map(item=>String(item.nisn||'').trim().toLowerCase()).filter(Boolean));
     const ready=[];let skipped=0;
     for(const row of candidates){const nisKey=row.nis.toLowerCase(),nisnKey=row.nisn?.toLowerCase()||'';const duplicate=existingNis.has(nisKey)||seenNis.has(nisKey)||(nisnKey&&(existingNisn.has(nisnKey)||seenNisn.has(nisnKey)));if(duplicate){skipped++;continue;}seenNis.add(nisKey);if(nisnKey)seenNisn.add(nisnKey);ready.push(row);}
     if(!ready.length)throw new Error(exampleSkipped&&!skipped?`Baris contoh sudah dilewati. Ganti NIS CONTOH dengan data siswa atau tambahkan baris siswa setelahnya.`:`Tidak ada siswa baru untuk disimpan. ${skipped} baris merupakan duplikat NIS/NISN.`);
     const classCounts={};ready.forEach(row=>{const className=classes.find(c=>c.id===row.current_class_id)?.name||'Kelas';classCounts[className]=(classCounts[className]||0)+1;});
-    if(!confirm(`Impor ${ready.length} siswa dari CSV?\n${Object.entries(classCounts).map(([name,count])=>`${name}: ${count}`).join('\n')}\n${skipped} baris duplikat dan ${exampleSkipped} baris contoh akan dilewati.`))return;
+    if(!confirm(`Impor ${ready.length} siswa dari Excel?\n${Object.entries(classCounts).map(([name,count])=>`${name}: ${count}`).join('\n')}\n${skipped} baris duplikat dan ${exampleSkipped} baris contoh akan dilewati.`))return;
     showStudentCsvStatus('Sedang menyimpan data siswa…');let saved=0,failed=0,historyFailed=0;const failureMessages=[];
     for(let start=0;start<ready.length;start+=50){
       const batch=ready.slice(start,start+50),{data,error}=await db.from('students').insert(batch).select('id,current_class_id');
@@ -761,9 +769,7 @@ $('gradeLedgerForm').addEventListener('submit',async event=>{
 });
 $('ledgerSearch').addEventListener('input',renderGradeLedger);$('ledgerYearFilter').addEventListener('change',renderGradeLedger);
 $('downloadLedgerTemplateBtn').onclick=()=>{
-  const csv='\uFEFFTahun Ajaran,Semester (1 atau 2),NIS,Nama Lengkap,Kelas,Mata Pelajaran,Nilai Asli (0-100),Nilai Akhir (0-100),Keterangan\r\n2024/2025,1,CONTOH,Budi Santoso,XI-1,Matematika,80,85,Baris contoh otomatis dilewati\r\n';
-  const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));link.download='template_legger_tahun_lalu.csv';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
-  alertBox('Isi satu baris untuk setiap siswa dan mapel. Baris contoh dengan NIS CONTOH otomatis dilewati; ganti atau hapus baris itu.', 'success');
+  try{downloadExcelTemplate('Template_Legger_Tahun_Lalu.xlsx','Template Legger Tahun Lalu','Data Legger',['Tahun Ajaran','Semester','NIS','Nama Lengkap','Kelas','Mata Pelajaran','Nilai Asli','Nilai Akhir','Keterangan'],['2024/2025','1','CONTOH','Budi Santoso','XI-1','Matematika','80','85','Baris contoh otomatis dilewati'],[20,16,20,32,18,28,20,20,38],['Isi data pada lembar Data Legger dan jangan ubah judul kolom.','Satu baris untuk satu siswa, mapel, semester, dan tahun ajaran. Ganti baris contoh atau hapus; NIS CONTOH otomatis dilewati.','Semua kolom wajib kecuali Keterangan. Semester isi 1 atau 2.','Nilai Asli dan Nilai Akhir isi angka 0 sampai 100.','Tahun ajaran isi seperti 2024/2025. NIS harus berupa teks; atur sel sebagai Teks bila diawali nol.','Jika kombinasi NIS, tahun ajaran, semester, dan mata pelajaran sudah tersimpan, impor akan memperbarui data tersebut.','Simpan sebagai .xlsx, lalu unggah melalui tombol Impor Excel.']);alertBox('Template Excel berhasil dibuat. Buka lembar Petunjuk untuk langkah pengisian.','success');}catch(error){alertBox(error.message,'error');}
 };
 $('importLedgerBtn').onclick=()=>{if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengimpor legger.','error');$('ledgerCsvInput').click();};
 function parseCsvRows(text){
@@ -780,16 +786,33 @@ function parseCsvRows(text){
   return rows.filter(values=>values.some(value=>String(value).trim()!==''));
 }
 function normalizeCsvHeader(value){return String(value||'').replace(/^\uFEFF/,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+async function readSpreadsheetRows(file,expectedSheet){
+  if(/\.csv$/i.test(file.name||''))return parseCsvRows(await file.text());
+  if(!window.XLSX)throw new Error('Pembaca Excel belum termuat. Periksa koneksi internet lalu muat ulang halaman.');
+  let workbook;try{workbook=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:false});}catch(error){throw new Error('File Excel tidak dapat dibaca. Pastikan file berformat .xlsx atau .xls.');}
+  const expected=expectedSheet.toLowerCase(),sheetName=workbook.SheetNames.find(name=>name.toLowerCase()===expected)||workbook.SheetNames.find(name=>name.toLowerCase()!=='petunjuk');
+  if(!sheetName)throw new Error(`Lembar ${expectedSheet} tidak ditemukan. Gunakan Template Excel ACADEMIA.`);
+  return XLSX.utils.sheet_to_json(workbook.Sheets[sheetName],{header:1,raw:false,defval:''}).filter(row=>row.some(value=>String(value??'').trim()!==''));
+}
+function normalizeStudentBirthDate(value){
+  const text=String(value??'').trim();if(!text)return '';
+  const valid=iso=>{const date=new Date(iso+'T00:00:00Z');return !Number.isNaN(date.getTime())&&date.toISOString().slice(0,10)===iso?iso:'';};
+  if(/^\d{4}-\d{2}-\d{2}$/.test(text))return valid(text);
+  if(/^\d+(\.\d+)?$/.test(text)){const serial=Number(text);if(serial>=20000&&serial<=100000){const date=new Date(Date.UTC(1899,11,30)+Math.floor(serial)*86400000);return date.toISOString().slice(0,10);}}
+  const parts=text.match(/^(\d{1,2})[/.\-](\d{1,2})[/.\-](\d{4})$/);
+  if(parts){let day=Number(parts[1]),month=Number(parts[2]);const year=Number(parts[3]);if(day<=12&&month>12)[day,month]=[month,day];return valid(`${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`);}
+  return '';
+}
 function parseLedgerScore(value){let normalized=String(value??'').trim();if(normalized.includes(','))normalized=normalized.replace(/\./g,'').replace(',','.');return Number(normalized);}
 $('ledgerCsvInput').addEventListener('change',async event=>{
   const file=event.target.files?.[0];if(!file)return;
   if(profile?.role!=='administrator'){event.target.value='';return alertBox('Hanya Administrator yang dapat mengimpor legger.','error');}
-  const rows=parseCsvRows(await file.text());if(rows.length<2){event.target.value='';return alertBox('CSV kosong atau hanya berisi judul kolom.','error');}
+  let rows;try{rows=await readSpreadsheetRows(file,'Data Legger');}catch(error){event.target.value='';return alertBox(error.message,'error');}if(rows.length<2){event.target.value='';return alertBox('Lembar Data Legger kosong atau belum memiliki data.','error');}
   const headers=rows.shift().map(normalizeCsvHeader),findColumn=names=>headers.findIndex(header=>names.includes(header));
   const columns={academic_year:findColumn(['tahunajaran','academicyear']),semester:findColumn(['semester','semester1atau2']),student_nis:findColumn(['nis','studentnis']),student_name:findColumn(['nama','namasiswa','namalengkap','studentname']),class_name:findColumn(['kelas','classname','class']),subject_name:findColumn(['mapel','matapelajaran','subject','subjectname']),original_score:findColumn(['nilaiasli','nilaiasli0100','originalscore']),final_score:findColumn(['nilaiakhir','nilaiakhir0100','finalscore']),notes:findColumn(['catatan','keterangan','notes'])};
   const required=['academic_year','semester','student_nis','student_name','class_name','subject_name','original_score','final_score'];
   const missing=required.filter(key=>columns[key]<0);
-  if(missing.length){event.target.value='';return alertBox('Kolom wajib pada CSV belum lengkap. Unduh Template CSV untuk melihat formatnya.','error');}
+  if(missing.length){event.target.value='';return alertBox('Judul kolom pada lembar Data Legger tidak cocok. Unduh dan gunakan Template Excel ACADEMIA.','error');}
   const parsed=[],problems=[];let exampleSkipped=0;
   rows.forEach((values,index)=>{
     const rowNumber=index+2,get=key=>String(values[columns[key]]??'').trim(),student_nis=get('student_nis');
@@ -798,7 +821,7 @@ $('ledgerCsvInput').addEventListener('change',async event=>{
     const item={academic_year:get('academic_year'),semester:get('semester'),student_nis,student_name:get('student_name'),class_name:get('class_name'),subject_name:get('subject_name'),original_score,final_score,notes:columns.notes>=0?get('notes'):'',created_by:currentUser.id};
     if(!item.academic_year||!['1','2'].includes(item.semester)||!item.student_nis||!item.student_name||!item.class_name||!item.subject_name||!Number.isFinite(original_score)||!Number.isFinite(final_score)||original_score<0||original_score>100||final_score<0||final_score>100)problems.push(rowNumber);else parsed.push(item);
   });
-  if(problems.length){event.target.value='';return alertBox(`Periksa baris CSV ${problems.slice(0,8).join(', ')}. Tahun ajaran, semester 1/2, identitas siswa/mapel, dan nilai 0–100 wajib terisi.`, 'error');}
+  if(problems.length){event.target.value='';return alertBox(`Periksa baris Excel ${problems.slice(0,8).join(', ')}. Tahun ajaran, semester 1/2, identitas siswa/mapel, dan nilai 0–100 wajib terisi.`, 'error');}
   if(!parsed.length){event.target.value='';return alertBox(exampleSkipped?'Baris contoh sudah dilewati. Isi data legger yang sebenarnya lalu impor kembali.':'Tidak ada baris data yang dapat diimpor.','error');}
   const {error}=await db.from('grade_ledger').upsert(parsed,{onConflict:'student_nis,academic_year,semester,subject_name'});
   event.target.value='';
