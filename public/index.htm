@@ -166,7 +166,7 @@
         </section>
 
         <section id="page-notifications" class="page hidden"><h1 class="text-2xl font-bold mb-4">Notifikasi</h1><div id="notificationsList" class="card p-4 text-sm">Belum ada notifikasi.</div></section>
-        <section id="page-audit" class="page hidden"><h1 class="text-2xl font-bold mb-4">Audit Trail</h1><div class="card p-4 overflow-x-auto"><table class="w-full"><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Tabel</th><th>ID Record</th></tr></thead><tbody id="auditBody"></tbody></table></div></section>
+        <section id="page-audit" class="page hidden"><div class="flex flex-wrap justify-between items-start gap-3 mb-4"><div><h1 class="text-2xl font-bold">Audit Trail</h1><p class="muted text-sm">Menampilkan maksimal 100 catatan terbaru.</p></div><button id="clearAuditBtn" class="btn danger hidden" type="button">Bersihkan Audit Trail</button></div><div class="card p-4 overflow-x-auto"><table class="w-full"><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Tabel</th><th>ID Record</th></tr></thead><tbody id="auditBody"></tbody></table></div></section>
       </div>
     </main>
   </div>
@@ -867,9 +867,24 @@ async function loadNotifications(){
   $('notificationsList').innerHTML=error?escapeHtml(error.message):(data||[]).map(n=>`<div class="py-3 border-b"><div class="font-semibold">${escapeHtml(n.title)}</div><p class="muted">${escapeHtml(n.message)}</p><small class="muted">${new Date(n.created_at).toLocaleString('id-ID')}</small></div>`).join('')||'Belum ada notifikasi.';
 }
 async function loadAudit(){
+  $('clearAuditBtn').classList.toggle('hidden',profile?.role!=='administrator');
   const {data,error}=await db.from('audit_logs').select('id,actor_id,action,table_name,record_id,created_at').order('created_at',{ascending:false}).limit(100);
   $('auditBody').innerHTML=error?`<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`:(data||[]).map(x=>`<tr><td>${new Date(x.created_at).toLocaleString('id-ID')}</td><td>${escapeHtml(x.actor_id||'System')}</td><td>${escapeHtml(x.action)}</td><td>${escapeHtml(x.table_name)}</td><td>${escapeHtml(x.record_id||'')}</td></tr>`).join('');
 }
+$('clearAuditBtn').addEventListener('click',async()=>{
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat membersihkan Audit Trail.','error');
+  const confirmation=prompt('Tindakan ini menghapus seluruh riwayat Audit Trail secara permanen. Ketik HAPUS AUDIT untuk melanjutkan:');
+  if(confirmation===null)return;
+  if(confirmation.trim().toUpperCase()!=='HAPUS AUDIT')return alertBox('Teks konfirmasi tidak cocok. Audit Trail tidak dihapus.','error');
+  const button=$('clearAuditBtn');button.disabled=true;
+  try{
+    const {data,error}=await db.rpc('clear_audit_logs');
+    if(error)throw error;
+    if(data!==true)throw new Error('Supabase tidak mengonfirmasi penghapusan.');
+    await loadAudit();alertBox('Seluruh riwayat Audit Trail berhasil dibersihkan.','success');
+  }catch(error){alertBox('Gagal membersihkan Audit Trail: '+(error?.message||error),'error');}
+  finally{button.disabled=false;}
+});
 async function generateReport(){
   const classId=$('reportClass').value,subjectId=$('reportSubject').value;
   const {data:studs,error}=await db.from('students').select('id,nis,full_name').eq('current_class_id',classId).eq('status','active').order('full_name');
