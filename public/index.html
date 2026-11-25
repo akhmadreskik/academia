@@ -18,6 +18,7 @@
     :root{--navy:#21103c;--violet:#7955d9;--lav:#b69aff}
     body{background:#f8fafc;color:#0f172a;font-family:Inter,ui-sans-serif,system-ui}
     .btn{padding:.58rem .9rem;border-radius:.7rem;font-weight:600;font-size:.875rem}
+    .btn:disabled{opacity:.45;cursor:not-allowed}
     .primary{background:var(--violet);color:white}.primary:hover{filter:brightness(.95)}
     .soft{background:#f1edff;color:#5939b5}.danger{background:#fee2e2;color:#991b1b}
     .field{width:100%;border:1px solid #e2e8f0;border-radius:.65rem;padding:.65rem .75rem;background:white}
@@ -106,7 +107,7 @@
         <section id="page-classes" class="page hidden">
           <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h1 class="text-2xl font-bold">Manajemen Kelas</h1><p class="muted text-sm">Tambah, ubah nama dan tahun ajaran, atur status, atau hapus kelas yang belum memiliki data terkait.</p></div><button id="addClassBtn" class="btn primary" type="button">＋ Tambah Kelas</button></div>
           <div class="card p-4 overflow-x-auto"><table class="w-full"><thead><tr><th>Kelas</th><th>Tahun Ajaran</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="classesBody"></tbody></table></div>
-          <div class="card p-4 mt-4"><div class="flex flex-wrap justify-between items-center gap-3"><div><h2 class="font-bold">Mata Pelajaran</h2><p class="muted text-sm">Daftar mata pelajaran yang tersedia untuk nilai, absensi, dan laporan.</p></div><button id="addSubjectBtn" class="btn primary" type="button">＋ Tambah Mapel</button></div><div id="subjectsList" class="mt-3 flex flex-wrap gap-2"></div></div>
+          <div class="card p-4 mt-4"><div class="flex flex-wrap justify-between items-center gap-3"><div><h2 class="font-bold">Mata Pelajaran</h2><p class="muted text-sm">Klik mapel untuk memilih, lalu gunakan Edit atau Hapus.</p></div><div class="flex flex-wrap gap-2"><button id="addSubjectBtn" class="btn primary" type="button">＋ Tambah Mapel</button><button id="editSubjectBtn" class="btn soft" type="button" disabled>Edit Mapel</button><button id="deleteSubjectBtn" class="btn danger" type="button" disabled>Hapus Mapel</button></div></div><div id="subjectsList" class="mt-3 flex flex-wrap gap-2"></div></div>
         </section>
 
         <section id="page-grades" class="page hidden">
@@ -164,7 +165,7 @@
   </form>
 </dialog>
 <dialog id="classDialog"><form id="classForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="classDialogTitle" class="font-bold">Tambah Kelas</h2><button type="button" class="text-xl" data-close="classDialog">×</button></div><input id="classId" type="hidden"><label class="text-sm">Nama kelas<input id="newClassName" class="field mt-1" placeholder="Contoh XI-7" required></label><label class="text-sm block mt-3">Tahun ajaran<input id="newClassYear" class="field mt-1" placeholder="Contoh 2026/2027 atau 2026"></label><div class="flex justify-end mt-5"><button id="saveClassBtn" type="submit" class="btn primary">Simpan Kelas</button></div></form></dialog>
-<dialog id="subjectDialog"><form id="subjectForm" class="p-6"><div class="flex justify-between mb-4"><h2 class="font-bold">Tambah Mata Pelajaran</h2><button type="button" class="text-xl" data-close="subjectDialog">×</button></div><label class="text-sm">Nama mata pelajaran<input id="newSubjectName" class="field mt-1" placeholder="Contoh Matematika" maxlength="120" required></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="subjectDialog">Batal</button><button type="submit" class="btn primary">Simpan Mapel</button></div></form></dialog>
+<dialog id="subjectDialog"><form id="subjectForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="subjectDialogTitle" class="font-bold">Tambah Mata Pelajaran</h2><button type="button" class="text-xl" data-close="subjectDialog">×</button></div><input id="subjectId" type="hidden"><label class="text-sm">Nama mata pelajaran<input id="newSubjectName" class="field mt-1" placeholder="Contoh Matematika" maxlength="120" required></label><label id="subjectStatusField" class="text-sm block mt-3 hidden">Status<select id="subjectActive" class="field mt-1"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="subjectDialog">Batal</button><button id="subjectSubmitBtn" type="submit" class="btn primary">Simpan Mapel</button></div></form></dialog>
 
 <dialog id="rosterScanDialog">
   <div class="p-6">
@@ -188,7 +189,7 @@ const SUPABASE_URL = "https://fdxzsszqwoturvkxmxas.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
-let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null;
+let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null;
 
 function alertBox(message,type='info'){
   const el=$('alert'); el.textContent=message; el.className='mb-4 p-3 rounded-lg text-sm '+(type==='error'?'bg-red-50 text-red-700':type==='success'?'bg-emerald-50 text-emerald-700':'bg-violet-50 text-violet-800');
@@ -452,22 +453,67 @@ async function deleteClassPermanently(id){
 }
 function renderSubjects(){
   const list=$('subjectsList');if(!list)return;
-  list.innerHTML=subjects.map(s=>`<span class="pill px-3 py-2">${escapeHtml(s.name)}${s.is_active===false?' · Nonaktif':''}</span>`).join('')||'<span class="muted text-sm">Belum ada mata pelajaran.</span>';
+  const isAdmin=profile?.role==='administrator';
+  if(!subjects.some(s=>s.id===selectedSubjectId))selectedSubjectId=null;
+  list.innerHTML=subjects.map(s=>isAdmin?`<button type="button" class="pill px-3 py-2 ${selectedSubjectId===s.id?'ring-2 ring-violet-500 bg-violet-100':''}" data-subject-select="${escapeHtml(s.id)}" aria-pressed="${selectedSubjectId===s.id}">${escapeHtml(s.name)}${s.is_active===false?' · Nonaktif':''}</button>`:`<span class="pill px-3 py-2">${escapeHtml(s.name)}${s.is_active===false?' · Nonaktif':''}</span>`).join('')||'<span class="muted text-sm">Belum ada mata pelajaran.</span>';
   $('addSubjectBtn').classList.toggle('hidden',profile?.role!=='administrator');
+  $('editSubjectBtn').classList.toggle('hidden',!isAdmin);$('deleteSubjectBtn').classList.toggle('hidden',!isAdmin);
+  $('editSubjectBtn').disabled=!selectedSubjectId;$('deleteSubjectBtn').disabled=!selectedSubjectId;
+}
+$('subjectsList').addEventListener('click',event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.hasAttribute('data-subject-select')){selectedSubjectId=button.dataset.subjectSelect;renderSubjects();}
+});
+function openSubjectDialog(subjectItem=null){
+  $('subjectForm').reset();$('subjectId').value=subjectItem?.id||'';
+  $('subjectDialogTitle').textContent=subjectItem?'Edit Mata Pelajaran':'Tambah Mata Pelajaran';
+  $('subjectSubmitBtn').textContent=subjectItem?'Simpan Perubahan':'Simpan Mapel';
+  $('subjectStatusField').classList.toggle('hidden',!subjectItem);
+  if(subjectItem){$('newSubjectName').value=subjectItem.name;$('subjectActive').value=String(subjectItem.is_active!==false);}
+  $('subjectDialog').showModal();
 }
 $('addSubjectBtn').onclick=()=>{
-  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah mata pelajaran.','error');
-  $('subjectForm').reset();$('subjectDialog').showModal();
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengelola mata pelajaran.','error');
+  openSubjectDialog();
 };
+$('editSubjectBtn').onclick=()=>{
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengelola mata pelajaran.','error');
+  const subject=subjects.find(s=>s.id===selectedSubjectId);if(subject)openSubjectDialog(subject);
+};
+$('deleteSubjectBtn').onclick=()=>deleteSubject(selectedSubjectId);
 $('subjectForm').addEventListener('submit',async e=>{
-  e.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah mata pelajaran.','error');
-  const name=$('newSubjectName').value.trim();if(!name)return alertBox('Nama mata pelajaran wajib diisi.','error');
-  if(subjects.some(s=>String(s.name).trim().toLowerCase()===name.toLowerCase()))return alertBox('Mata pelajaran tersebut sudah terdaftar.','error');
-  const {data,error}=await db.from('subjects').insert({name,is_active:true}).select('id').maybeSingle();
-  if(error)return alertBox('Gagal menambah mata pelajaran: '+error.message,'error');
-  if(!data)return alertBox('Mata pelajaran tidak tersimpan. Periksa izin Administrator di Supabase.','error');
-  $('subjectDialog').close();await loadMasterData();renderSubjects();alertBox(`Mata pelajaran ${name} berhasil ditambahkan.`,'success');
+  e.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengelola mata pelajaran.','error');
+  const id=$('subjectId').value,name=$('newSubjectName').value.trim(),is_active=id?$('subjectActive').value==='true':true;
+  if(!name)return alertBox('Nama mata pelajaran wajib diisi.','error');
+  if(subjects.some(s=>s.id!==id&&String(s.name).trim().toLowerCase()===name.toLowerCase()))return alertBox('Mata pelajaran tersebut sudah terdaftar.','error');
+  let data,error;
+  if(id){({data,error}=await db.from('subjects').update({name,is_active}).eq('id',id).select('id').maybeSingle());}
+  else{({data,error}=await db.from('subjects').insert({name,is_active:true}).select('id').maybeSingle());}
+  if(error)return alertBox((id?'Gagal mengubah mata pelajaran: ':'Gagal menambah mata pelajaran: ')+error.message,'error');
+  if(!data)return alertBox('Perubahan mata pelajaran tidak tersimpan. Periksa izin Administrator di Supabase.','error');
+  $('subjectDialog').close();await loadMasterData();renderSubjects();alertBox(id?`Mata pelajaran ${name} berhasil diperbarui.`:`Mata pelajaran ${name} berhasil ditambahkan.`,'success');
 });
+async function deleteSubject(id){
+  const subject=subjects.find(s=>s.id===id);if(!subject||profile?.role!=='administrator')return;
+  if(!confirm(`Hapus mata pelajaran ${subject.name}? Jika sudah dipakai pada nilai atau absensi, mapel akan dinonaktifkan agar data lama tetap tersimpan.`))return;
+  const checks=await Promise.all([
+    db.from('assessment_components').select('id',{count:'exact',head:true}).eq('subject_id',id),
+    db.from('attendance_sessions').select('id',{count:'exact',head:true}).eq('subject_id',id)
+  ]);
+  const failed=checks.find(result=>result.error);
+  if(failed)return alertBox('Tidak dapat memeriksa pemakaian mata pelajaran: '+failed.error.message,'error');
+  const isUsed=checks.some(result=>(result.count||0)>0);
+  if(isUsed){
+    const {data,error}=await db.from('subjects').update({is_active:false}).eq('id',id).select('id').maybeSingle();
+    if(error)return alertBox('Gagal menonaktifkan mata pelajaran: '+error.message,'error');
+    if(!data)return alertBox('Mapel tidak berubah. Periksa izin Edit Mapel Administrator di Supabase.','error');
+    await loadMasterData();renderSubjects();return alertBox(`Mata pelajaran ${subject.name} dinonaktifkan. Data nilai dan absensi lama tetap tersimpan.`,'success');
+  }
+  const {data,error}=await db.from('subjects').delete().eq('id',id).select('id').maybeSingle();
+  if(error)return alertBox('Gagal menghapus mata pelajaran: '+error.message,'error');
+  if(!data)return alertBox('Mapel tidak terhapus. Periksa izin Hapus Mapel Administrator di Supabase.','error');
+  await loadMasterData();renderSubjects();alertBox(`Mata pelajaran ${subject.name} berhasil dihapus.`,'success');
+}
 function resetComponentEditor(){
   editingComponentId=null;$('componentName').value='';$('componentWeight').value='';$('addComponentBtn').textContent='Tambah komponen';$('cancelComponentEditBtn').classList.add('hidden');$('componentEditorStatus').textContent='';
 }
@@ -599,5 +645,3 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
-
-Filter file
