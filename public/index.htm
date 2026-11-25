@@ -139,14 +139,12 @@
         </section>
 
         <section id="page-interactive" class="page hidden">
-          <div class="mb-4"><h1 class="text-2xl font-bold">Ruang Interaktif</h1><p class="muted text-sm">Pilih topik untuk melihat kumpulan materi, video, kuis, dan games pembelajaran.</p></div>
-          <div id="interactiveTopicList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            <button type="button" class="card p-5 text-left hover:border-violet-300 hover:shadow-md transition" data-topic-open="stoikiometri"><span class="text-2xl">📁</span><h2 class="font-bold mt-3">Stoikiometri</h2><p class="muted text-sm mt-1">Kumpulan tautan pembelajaran Stoikiometri.</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>
-            <div class="card p-5 border-dashed"><span class="text-2xl">＋</span><h2 class="font-bold mt-3">Topik lainnya</h2><p class="muted text-sm mt-1">Folder materi lain dapat ditambahkan di sini.</p></div>
-          </div>
+          <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h1 class="text-2xl font-bold">Ruang Interaktif</h1><p class="muted text-sm">Pilih topik untuk melihat kumpulan materi, video, kuis, dan games pembelajaran.</p></div><button id="addInteractiveTopicBtn" class="btn primary" type="button">＋ Tambah Topik</button></div>
+          <div id="interactiveTopicError" class="hidden mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700"></div>
+          <div id="interactiveTopicList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
           <div id="interactiveTopicDetail" class="hidden">
             <button id="interactiveBackBtn" type="button" class="btn soft mb-4">← Kembali ke daftar topik</button>
-            <div class="card p-5"><h2 id="interactiveTopicTitle" class="text-xl font-bold">Stoikiometri</h2><p class="muted text-sm mt-1">Materi, video pembelajaran, kuis, dan games untuk topik ini akan dikumpulkan di sini.</p><div id="interactiveMaterialList" class="mt-5 rounded-lg bg-slate-50 p-5 text-sm muted">Belum ada tautan materi. Tautan pembelajaran Stoikiometri dapat ditambahkan ke daftar ini nanti.</div></div>
+            <div class="card p-5"><h2 id="interactiveTopicTitle" class="text-xl font-bold"></h2><p id="interactiveTopicDescription" class="muted text-sm mt-1"></p><a id="interactiveTopicDriveLink" class="btn primary inline-block mt-4 hidden" target="_blank" rel="noopener noreferrer">Buka Folder Materi</a><div id="interactiveMaterialList" class="mt-5 rounded-lg bg-slate-50 p-5 text-sm muted">Tautan materi untuk topik ini belum ditambahkan.</div></div>
           </div>
         </section>
 
@@ -188,6 +186,8 @@
 <dialog id="classDialog"><form id="classForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="classDialogTitle" class="font-bold">Tambah Kelas</h2><button type="button" class="text-xl" data-close="classDialog">×</button></div><input id="classId" type="hidden"><label class="text-sm">Nama kelas<input id="newClassName" class="field mt-1" placeholder="Contoh XI-7" required></label><label class="text-sm block mt-3">Tahun ajaran<input id="newClassYear" class="field mt-1" placeholder="Contoh 2026/2027 atau 2026"></label><div class="flex justify-end mt-5"><button id="saveClassBtn" type="submit" class="btn primary">Simpan Kelas</button></div></form></dialog>
 <dialog id="subjectDialog"><form id="subjectForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="subjectDialogTitle" class="font-bold">Tambah Mata Pelajaran</h2><button type="button" class="text-xl" data-close="subjectDialog">×</button></div><input id="subjectId" type="hidden"><label class="text-sm">Nama mata pelajaran<input id="newSubjectName" class="field mt-1" placeholder="Contoh Matematika" maxlength="120" required></label><label id="subjectStatusField" class="text-sm block mt-3 hidden">Status<select id="subjectActive" class="field mt-1"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="subjectDialog">Batal</button><button id="subjectSubmitBtn" type="submit" class="btn primary">Simpan Mapel</button></div></form></dialog>
 
+<dialog id="interactiveTopicDialog"><form id="interactiveTopicForm" class="p-6"><div class="flex justify-between items-center mb-4"><h2 class="font-bold text-lg">Tambah Topik</h2><button type="button" class="text-xl" data-close="interactiveTopicDialog">×</button></div><label class="block text-sm font-semibold mb-3">Nama topik *<input id="interactiveTopicName" class="field mt-1" maxlength="120" placeholder="Contoh Stoikiometri" required></label><label class="block text-sm font-semibold mb-3">Deskripsi<input id="interactiveTopicDescriptionInput" class="field mt-1" maxlength="250" placeholder="Kumpulan materi pembelajaran"></label><label class="block text-sm font-semibold">Link folder materi (opsional)<input id="interactiveTopicDriveUrlInput" class="field mt-1" type="url" placeholder="https://drive.google.com/..."><span class="muted text-xs">Link bisa ditambahkan sekarang atau nanti.</span></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="interactiveTopicDialog">Batal</button><button id="saveInteractiveTopicBtn" type="submit" class="btn primary">Simpan Topik</button></div></form></dialog>
+
 <dialog id="rosterScanDialog">
   <div class="p-6">
     <div class="flex justify-between items-center mb-3"><h2 class="font-bold text-lg">Tambah Siswa dari Foto Absensi</h2><button type="button" class="text-xl" data-close="rosterScanDialog">×</button></div>
@@ -210,7 +210,7 @@ const SUPABASE_URL = "https://fdxzsszqwoturvkxmxas.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
-let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null;
+let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null;
 
 function alertBox(message,type='info'){
   const el=$('alert'); el.textContent=message; el.className='mb-4 p-3 rounded-lg text-sm '+(type==='error'?'bg-red-50 text-red-700':type==='success'?'bg-emerald-50 text-emerald-700':'bg-violet-50 text-violet-800');
@@ -226,17 +226,58 @@ function showPage(page){
   if(page==='students')renderStudents();
   if(page==='classes'){renderClasses();renderSubjects();}
   if(page==='grades')prepareGrades();
+  if(page==='interactive')loadInteractiveTopics();
   if(page==='attendance')prepareAttendance();
   if(page==='notifications')loadNotifications();
   if(page==='audit')loadAudit();
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));
+function renderInteractiveTopics(){
+  const list=$('interactiveTopicList'),isAdmin=profile?.role==='administrator';
+  list.innerHTML=interactiveTopics.map(topic=>`<button type="button" class="card p-5 text-left hover:border-violet-300 hover:shadow-md transition" data-topic-open="${escapeHtml(topic.id)}"><span class="text-2xl">📁</span><h2 class="font-bold mt-3">${escapeHtml(topic.name)}${topic.is_active===false?' · Nonaktif':''}</h2><p class="muted text-sm mt-1">${escapeHtml(topic.description||'Kumpulan tautan pembelajaran '+topic.name+'.')}</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>`).join('');
+  if(isAdmin)list.insertAdjacentHTML('beforeend','<button type="button" id="addTopicCardBtn" class="card p-5 border-dashed text-left hover:border-violet-300"><span class="text-2xl">＋</span><h2 class="font-bold mt-3">Tambah Topik</h2><p class="muted text-sm mt-1">Buat folder topik baru untuk materi pembelajaran.</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Tambah →</span></button>');
+  $('addInteractiveTopicBtn').classList.toggle('hidden',!isAdmin);
+  $('interactiveTopicError').classList.add('hidden');
+}
+async function loadInteractiveTopics(){
+  $('interactiveTopicDetail').classList.add('hidden');$('interactiveTopicList').classList.remove('hidden');
+  const {data,error}=await db.from('interactive_topics').select('*').order('sort_order').order('name');
+  if(error){interactiveTopics=[];renderInteractiveTopics();$('interactiveTopicError').textContent='Gagal memuat topik. Jalankan SQL terbaru di Supabase terlebih dahulu: '+error.message;$('interactiveTopicError').classList.remove('hidden');return;}
+  interactiveTopics=data||[];renderInteractiveTopics();
+}
+function openInteractiveTopic(topic){
+  if(!topic)return;
+  $('interactiveTopicTitle').textContent=topic.name;
+  $('interactiveTopicDescription').textContent=topic.description||'Kumpulan materi pembelajaran '+topic.name+'.';
+  $('interactiveTopicDriveLink').href=topic.drive_url||'#';
+  $('interactiveTopicDriveLink').classList.toggle('hidden',!topic.drive_url);
+  $('interactiveMaterialList').textContent='Tautan materi untuk topik ini belum ditambahkan.';
+  $('interactiveTopicList').classList.add('hidden');$('interactiveTopicDetail').classList.remove('hidden');
+}
 $('interactiveTopicList').addEventListener('click',event=>{
-  const button=event.target.closest('[data-topic-open]');if(!button)return;
-  if(button.dataset.topicOpen==='stoikiometri'){$('interactiveTopicTitle').textContent='Stoikiometri';$('interactiveMaterialList').textContent='Belum ada tautan materi. Tautan pembelajaran Stoikiometri dapat ditambahkan ke daftar ini nanti.';$('interactiveTopicList').classList.add('hidden');$('interactiveTopicDetail').classList.remove('hidden');}
+  const button=event.target.closest('button');if(!button)return;
+  if(button.id==='addTopicCardBtn')return $('interactiveTopicDialog').showModal();
+  if(button.hasAttribute('data-topic-open'))return openInteractiveTopic(interactiveTopics.find(topic=>topic.id===button.dataset.topicOpen));
 });
+$('addInteractiveTopicBtn').onclick=()=>{
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah topik.','error');
+  $('interactiveTopicForm').reset();$('interactiveTopicDialog').showModal();
+};
 $('interactiveBackBtn').addEventListener('click',()=>{$('interactiveTopicDetail').classList.add('hidden');$('interactiveTopicList').classList.remove('hidden');});
+$('interactiveTopicForm').addEventListener('submit',async event=>{
+  event.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah topik.','error');
+  const name=$('interactiveTopicName').value.trim(),description=$('interactiveTopicDescriptionInput').value.trim(),drive_url=$('interactiveTopicDriveUrlInput').value.trim()||null;
+  if(!name)return alertBox('Nama topik wajib diisi.','error');
+  if(drive_url){try{if(new URL(drive_url).protocol!=='https:')return alertBox('Link materi harus menggunakan https://.','error');}catch{return alertBox('Format link materi tidak valid.','error');}}
+  if(interactiveTopics.some(topic=>topic.name.trim().toLowerCase()===name.toLowerCase()))return alertBox('Topik dengan nama tersebut sudah ada.','error');
+  const slug=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'topik';
+  const sort_order=interactiveTopics.reduce((max,topic)=>Math.max(max,Number(topic.sort_order)||0),0)+10;
+  const {data,error}=await db.from('interactive_topics').insert({slug,name,description,drive_url,is_active:true,sort_order,created_by:currentUser.id}).select('id').maybeSingle();
+  if(error)return alertBox('Gagal menambah topik: '+error.message,'error');
+  if(!data)return alertBox('Topik tidak tersimpan. Periksa izin Administrator di Supabase.','error');
+  $('interactiveTopicDialog').close();await loadInteractiveTopics();alertBox(`Topik ${name} berhasil ditambahkan.`,'success');
+});
 $('loginForm').addEventListener('submit',async e=>{
   e.preventDefault(); $('loginError').textContent='';
   const {data,error}=await db.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});
