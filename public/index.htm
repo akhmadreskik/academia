@@ -64,6 +64,8 @@
         <button class="navbtn" data-page="grades">▦ Manajemen Nilai</button>
         <button class="navbtn" data-page="soal-uh">▣ Kumpulan Soal UH</button>
         <button class="navbtn" data-page="soal-osn">🏅 Soal OSN</button>
+        <button class="navbtn" data-page="learning-docs">📚 Perangkat Pembelajaran</button>
+        <button class="navbtn" data-page="interactive">🎮 Ruang Interaktif</button>
         <button class="navbtn" data-page="attendance">✓ Absensi</button>
         <button class="navbtn" data-page="reports">▧ Laporan</button>
         <button class="navbtn" data-page="notifications">◉ Notifikasi</button>
@@ -83,6 +85,8 @@
         <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="grades">▦ Nilai</button>
         <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="soal-uh">▣ Soal UH</button>
         <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="soal-osn">🏅 Soal OSN</button>
+        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="learning-docs">📚 Perangkat Pembelajaran</button>
+        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="interactive">🎮 Ruang Interaktif</button>
         <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="attendance">✓ Absensi</button>
         <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="reports">▧ Laporan</button>
         <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="notifications">◉ Notifikasi</button>
@@ -127,6 +131,23 @@
         <section id="page-soal-osn" class="page hidden">
           <div class="mb-4"><h1 class="text-2xl font-bold">Kumpulan Soal OSN</h1><p class="muted text-sm">Koleksi soal Olimpiade Sains Nasional dari Google Drive.</p></div>
           <div class="card p-5"><h2 class="font-bold mb-2">Folder Google Drive</h2><p id="osnDriveStatus" class="muted text-sm">Folder soal OSN sudah dihubungkan. Jika diminta, login ke akun Google yang diberi akses ke folder.</p><a id="osnDriveLink" class="btn primary inline-block mt-4" href="https://drive.google.com/drive/folders/1gaZlJUfDmEdsAa79-nzk_PbCaJ3og3oS?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Kumpulan Soal OSN</a></div>
+        </section>
+
+        <section id="page-learning-docs" class="page hidden">
+          <div class="mb-4"><h1 class="text-2xl font-bold">Perangkat Pembelajaran</h1><p class="muted text-sm">Buka folder Google Drive untuk memilih mapel dan perangkat yang ingin dibaca.</p></div>
+          <div class="card p-5"><div class="flex flex-wrap items-center justify-between gap-4"><div><h2 class="font-bold">Folder Perangkat Pembelajaran</h2><p class="muted text-sm mt-1">Di Google Drive, pilih folder mata pelajaran, lalu buka RPP/ATP atau dokumen lainnya. PDF dapat dibaca melalui pratinjau Google Drive.</p></div><a class="btn primary inline-block" href="https://drive.google.com/drive/folders/1j1_0jJ4M2optV-bTOm56djgsmHc-OFYH?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Folder Drive</a></div><div class="mt-4 rounded-lg bg-slate-50 p-4 text-sm muted">Folder ini memakai tautan Google Drive yang diberikan. Pastikan akun Google yang digunakan memiliki akses ke file.</div></div>
+        </section>
+
+        <section id="page-interactive" class="page hidden">
+          <div class="mb-4"><h1 class="text-2xl font-bold">Ruang Interaktif</h1><p class="muted text-sm">Pilih topik untuk melihat kumpulan materi, video, kuis, dan games pembelajaran.</p></div>
+          <div id="interactiveTopicList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            <button type="button" class="card p-5 text-left hover:border-violet-300 hover:shadow-md transition" data-topic-open="stoikiometri"><span class="text-2xl">📁</span><h2 class="font-bold mt-3">Stoikiometri</h2><p class="muted text-sm mt-1">Kumpulan tautan pembelajaran Stoikiometri.</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>
+            <div class="card p-5 border-dashed"><span class="text-2xl">＋</span><h2 class="font-bold mt-3">Topik lainnya</h2><p class="muted text-sm mt-1">Folder materi lain dapat ditambahkan di sini.</p></div>
+          </div>
+          <div id="interactiveTopicDetail" class="hidden">
+            <button id="interactiveBackBtn" type="button" class="btn soft mb-4">← Kembali ke daftar topik</button>
+            <div class="card p-5"><h2 id="interactiveTopicTitle" class="text-xl font-bold">Stoikiometri</h2><p class="muted text-sm mt-1">Materi, video pembelajaran, kuis, dan games untuk topik ini akan dikumpulkan di sini.</p><div id="interactiveMaterialList" class="mt-5 rounded-lg bg-slate-50 p-5 text-sm muted">Belum ada tautan materi. Tautan pembelajaran Stoikiometri dapat ditambahkan ke daftar ini nanti.</div></div>
+          </div>
         </section>
 
         <section id="page-attendance" class="page hidden">
@@ -199,7 +220,7 @@ function showPage(page){
   currentPage=page;
   document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));
   $('page-'+page)?.classList.remove('hidden');
-  $('pageTitle').textContent=({dashboard:'Dashboard',students:'Data Siswa',classes:'Manajemen Kelas',grades:'Manajemen Nilai','soal-uh':'Kumpulan Soal UH','soal-osn':'Kumpulan Soal OSN',attendance:'Absensi',reports:'Laporan',notifications:'Notifikasi',audit:'Audit Trail'})[page]||page;
+  $('pageTitle').textContent=({dashboard:'Dashboard',students:'Data Siswa',classes:'Manajemen Kelas',grades:'Manajemen Nilai','soal-uh':'Kumpulan Soal UH','soal-osn':'Kumpulan Soal OSN','learning-docs':'Perangkat Pembelajaran',interactive:'Ruang Interaktif',attendance:'Absensi',reports:'Laporan',notifications:'Notifikasi',audit:'Audit Trail'})[page]||page;
   document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   if(page==='dashboard')loadDashboard();
   if(page==='students')renderStudents();
@@ -211,6 +232,11 @@ function showPage(page){
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));
+$('interactiveTopicList').addEventListener('click',event=>{
+  const button=event.target.closest('[data-topic-open]');if(!button)return;
+  if(button.dataset.topicOpen==='stoikiometri'){$('interactiveTopicTitle').textContent='Stoikiometri';$('interactiveMaterialList').textContent='Belum ada tautan materi. Tautan pembelajaran Stoikiometri dapat ditambahkan ke daftar ini nanti.';$('interactiveTopicList').classList.add('hidden');$('interactiveTopicDetail').classList.remove('hidden');}
+});
+$('interactiveBackBtn').addEventListener('click',()=>{$('interactiveTopicDetail').classList.add('hidden');$('interactiveTopicList').classList.remove('hidden');});
 $('loginForm').addEventListener('submit',async e=>{
   e.preventDefault(); $('loginError').textContent='';
   const {data,error}=await db.auth.signInWithPassword({email:$('loginEmail').value.trim(),password:$('loginPassword').value});
