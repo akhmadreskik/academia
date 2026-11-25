@@ -119,8 +119,9 @@
           <div class="card p-4 mb-4 grid md:grid-cols-4 gap-3">
             <select id="gradeClass" class="field"></select><select id="gradeSubject" class="field"></select><input id="gradeYear" class="field" placeholder="Tahun ajaran, contoh 2026/2027" value="2026/2027"><select id="gradeSemester" class="field"><option value="1">Semester 1</option><option value="2">Semester 2</option></select>
           </div>
-          <div class="card p-4 mb-4"><h2 class="font-bold mb-3">Komponen penilaian</h2><div class="grid md:grid-cols-4 gap-2"><input id="componentName" class="field" placeholder="Nama komponen, contoh Tugas"><input id="componentWeight" class="field" type="number" min="0.01" max="100" step="0.01" placeholder="Bobot (%)"><button id="addComponentBtn" class="btn primary" type="button">Tambah komponen</button><button id="cancelComponentEditBtn" class="btn soft hidden" type="button">Batal edit</button></div><div id="componentEditorStatus" class="text-xs muted mt-2" aria-live="polite"></div><div id="componentsList" class="mt-3 text-sm"></div><p class="text-xs muted mt-2">Hapus akan menonaktifkan komponen; nilai lama tetap tersimpan di Supabase.</p></div>
-          <div class="card p-4 overflow-x-auto"><div class="flex justify-between items-center mb-3"><h2 class="font-bold">Input nilai</h2><button id="loadGradesBtn" class="btn soft">Muat data</button></div><table class="w-full"><thead id="gradesHead"></thead><tbody id="gradesBody"></tbody></table><p class="text-xs muted mt-3">Nilai disimpan per siswa dan komponen penilaian.</p></div>
+          <div class="card p-4 mb-4"><h2 class="font-bold mb-3">Komponen penilaian</h2><div class="grid md:grid-cols-5 gap-2"><input id="componentName" class="field" placeholder="Nama komponen, contoh Tugas 1"><select id="componentCategory" class="field"><option value="tugas">Kategori: Tugas</option><option value="uh">Kategori: UH</option><option value="ujian_akhir">Kategori: Ujian Akhir</option></select><input id="componentWeight" class="field" type="number" min="0.01" max="100" step="0.01" placeholder="Bobot (%)"><button id="addComponentBtn" class="btn primary" type="button">Tambah komponen</button><button id="cancelComponentEditBtn" class="btn soft hidden" type="button">Batal edit</button></div><div id="componentEditorStatus" class="text-xs muted mt-2" aria-live="polite"></div><div id="componentsList" class="mt-3 text-sm"></div><p class="text-xs muted mt-2">Kelompokkan setiap komponen sebagai Tugas, UH, atau Ujian Akhir. Hapus akan menonaktifkan komponen; nilai lama tetap tersimpan di Supabase.</p></div>
+          <div class="card p-4 overflow-x-auto"><div class="flex justify-between items-center mb-3"><h2 class="font-bold">Input nilai tahun berjalan</h2><button id="loadGradesBtn" class="btn soft">Muat data</button></div><table class="w-full"><thead id="gradesHead"></thead><tbody id="gradesBody"></tbody></table><p class="text-xs muted mt-3">Nilai Asli menampilkan rata-rata kategori Tugas, UH, dan Ujian Akhir setelah ketiganya memiliki nilai. Nilai Akhir mengikuti bobot komponen yang sudah diatur.</p></div>
+          <div class="card p-4 mt-4 overflow-x-auto"><div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h2 class="font-bold">Legger Tahun Lalu</h2><p class="muted text-sm">Data historis sebagai acuan; tidak masuk ke perhitungan nilai tahun berjalan.</p></div><div class="flex flex-wrap gap-2"><button id="downloadLedgerTemplateBtn" class="btn soft" type="button">Unduh Template CSV</button><button id="importLedgerBtn" class="btn soft" type="button">Impor CSV</button><button id="addLedgerBtn" class="btn primary" type="button">＋ Tambah Legger</button><input id="ledgerCsvInput" class="hidden" type="file" accept=".csv,text/csv"></div></div><div class="grid sm:grid-cols-2 gap-3 mb-3"><input id="ledgerSearch" class="field" placeholder="Cari NIS, nama, kelas, atau mapel"><select id="ledgerYearFilter" class="field"><option value="">Semua tahun ajaran</option></select></div><table class="w-full"><thead><tr><th>Tahun Ajaran</th><th>Semester</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>Mapel</th><th>Nilai Asli</th><th>Nilai Akhir</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="ledgerBody"></tbody></table></div>
         </section>
 
         <section id="page-soal-uh" class="page hidden">
@@ -188,6 +189,8 @@
 
 <dialog id="interactiveTopicDialog"><form id="interactiveTopicForm" class="p-6"><div class="flex justify-between items-center mb-4"><h2 class="font-bold text-lg">Tambah Topik</h2><button type="button" class="text-xl" data-close="interactiveTopicDialog">×</button></div><label class="block text-sm font-semibold mb-3">Nama topik *<input id="interactiveTopicName" class="field mt-1" maxlength="120" placeholder="Contoh Stoikiometri" required></label><label class="block text-sm font-semibold mb-3">Deskripsi<input id="interactiveTopicDescriptionInput" class="field mt-1" maxlength="250" placeholder="Kumpulan materi pembelajaran"></label><label class="block text-sm font-semibold">Link folder materi (opsional)<input id="interactiveTopicDriveUrlInput" class="field mt-1" type="url" placeholder="https://drive.google.com/..."><span class="muted text-xs">Link bisa ditambahkan sekarang atau nanti.</span></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="interactiveTopicDialog">Batal</button><button id="saveInteractiveTopicBtn" type="submit" class="btn primary">Simpan Topik</button></div></form></dialog>
 
+<dialog id="gradeLedgerDialog"><form id="gradeLedgerForm" class="p-6"><div class="flex justify-between items-center mb-4"><h2 id="gradeLedgerDialogTitle" class="font-bold text-lg">Tambah Legger Tahun Lalu</h2><button type="button" class="text-xl" data-close="gradeLedgerDialog">×</button></div><input id="gradeLedgerId" type="hidden"><div class="grid md:grid-cols-2 gap-3"><label class="text-sm">Tahun ajaran *<input id="ledgerAcademicYear" class="field mt-1" placeholder="2025/2026" required></label><label class="text-sm">Semester *<select id="ledgerSemester" class="field mt-1"><option value="1">Semester 1</option><option value="2">Semester 2</option></select></label><label class="text-sm">NIS *<input id="ledgerNis" class="field mt-1" required></label><label class="text-sm">Nama siswa *<input id="ledgerStudentName" class="field mt-1" required></label><label class="text-sm">Kelas *<input id="ledgerClassName" class="field mt-1" placeholder="XI-3" required></label><label class="text-sm">Mata pelajaran *<input id="ledgerSubjectName" class="field mt-1" required></label><label class="text-sm">Nilai Asli *<input id="ledgerOriginalScore" class="field mt-1" type="number" min="0" max="100" step="0.01" required></label><label class="text-sm">Nilai Akhir *<input id="ledgerFinalScore" class="field mt-1" type="number" min="0" max="100" step="0.01" required></label><label class="text-sm md:col-span-2">Catatan<input id="ledgerNotes" class="field mt-1" maxlength="500" placeholder="Opsional"></label></div><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="gradeLedgerDialog">Batal</button><button id="saveLedgerBtn" type="submit" class="btn primary">Simpan Legger</button></div></form></dialog>
+
 <dialog id="rosterScanDialog">
   <div class="p-6">
     <div class="flex justify-between items-center mb-3"><h2 class="font-bold text-lg">Tambah Siswa dari Foto Absensi</h2><button type="button" class="text-xl" data-close="rosterScanDialog">×</button></div>
@@ -210,7 +213,7 @@ const SUPABASE_URL = "https://fdxzsszqwoturvkxmxas.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
-let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null;
+let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], gradeLedgerRows=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null;
 
 function alertBox(message,type='info'){
   const el=$('alert'); el.textContent=message; el.className='mb-4 p-3 rounded-lg text-sm '+(type==='error'?'bg-red-50 text-red-700':type==='success'?'bg-emerald-50 text-emerald-700':'bg-violet-50 text-violet-800');
@@ -225,7 +228,7 @@ function showPage(page){
   if(page==='dashboard')loadDashboard();
   if(page==='students')renderStudents();
   if(page==='classes'){renderClasses();renderSubjects();}
-  if(page==='grades')prepareGrades();
+  if(page==='grades'){prepareGrades();loadGradeLedger();}
   if(page==='interactive')loadInteractiveTopics();
   if(page==='attendance')prepareAttendance();
   if(page==='notifications')loadNotifications();
@@ -582,30 +585,31 @@ async function deleteSubject(id){
   await loadMasterData();renderSubjects();alertBox(`Mata pelajaran ${subject.name} berhasil dihapus.`,'success');
 }
 function resetComponentEditor(){
-  editingComponentId=null;$('componentName').value='';$('componentWeight').value='';$('addComponentBtn').textContent='Tambah komponen';$('cancelComponentEditBtn').classList.add('hidden');$('componentEditorStatus').textContent='';
+  editingComponentId=null;$('componentName').value='';$('componentCategory').value='tugas';$('componentWeight').value='';$('addComponentBtn').textContent='Tambah komponen';$('cancelComponentEditBtn').classList.add('hidden');$('componentEditorStatus').textContent='';
 }
 function renderComponentList(){
   const list=$('componentsList');
-  list.innerHTML=components.map(c=>`<div class="flex flex-wrap items-center gap-2 border-b border-slate-100 py-2"><div class="flex-1 min-w-40"><span class="font-semibold">${escapeHtml(c.name)}</span><span class="pill ml-2">${Number(c.weight)}%</span></div><button type="button" class="btn soft" data-component-edit="${c.id}">Edit</button><button type="button" class="btn danger" data-component-delete="${c.id}">Hapus</button></div>`).join('')||'<span class="muted">Belum ada komponen.</span>';
+  const categoryNames={tugas:'Tugas',uh:'UH',ujian_akhir:'Ujian Akhir'};
+  list.innerHTML=components.map(c=>`<div class="flex flex-wrap items-center gap-2 border-b border-slate-100 py-2"><div class="flex-1 min-w-40"><span class="font-semibold">${escapeHtml(c.name)}</span><span class="pill ml-2">${escapeHtml(categoryNames[c.category]||'Belum dikelompokkan')}</span><span class="pill ml-1">${Number(c.weight)}%</span></div><button type="button" class="btn soft" data-component-edit="${c.id}">Edit</button><button type="button" class="btn danger" data-component-delete="${c.id}">Hapus</button></div>`).join('')||'<span class="muted">Belum ada komponen.</span>';
   document.querySelectorAll('[data-component-edit]').forEach(button=>button.onclick=()=>{
     const component=components.find(item=>item.id===button.dataset.componentEdit);if(!component)return;
-    editingComponentId=component.id;$('componentName').value=component.name;$('componentWeight').value=component.weight;$('addComponentBtn').textContent='Simpan perubahan';$('cancelComponentEditBtn').classList.remove('hidden');$('componentEditorStatus').textContent='Sedang mengedit komponen. Ubah nama atau bobot, lalu simpan.';$('componentName').focus();
+    editingComponentId=component.id;$('componentName').value=component.name;$('componentCategory').value=component.category||'tugas';$('componentWeight').value=component.weight;$('addComponentBtn').textContent='Simpan perubahan';$('cancelComponentEditBtn').classList.remove('hidden');$('componentEditorStatus').textContent='Sedang mengedit komponen. Ubah nama, kategori, atau bobot, lalu simpan.';$('componentName').focus();
   });
   document.querySelectorAll('[data-component-delete]').forEach(button=>button.onclick=()=>deactivateComponent(button.dataset.componentDelete));
 }
 $('cancelComponentEditBtn').onclick=resetComponentEditor;
 $('addComponentBtn').onclick=async()=>{
-  const subject=$('gradeSubject').value,classId=$('gradeClass').value,name=$('componentName').value.trim(),weight=Number($('componentWeight').value),year=$('gradeYear').value.trim(),semester=$('gradeSemester').value;
+  const subject=$('gradeSubject').value,classId=$('gradeClass').value,name=$('componentName').value.trim(),category=$('componentCategory').value,weight=Number($('componentWeight').value),year=$('gradeYear').value.trim(),semester=$('gradeSemester').value;
   if(!subject||!name||!Number.isFinite(weight)||weight<=0||weight>100)return alertBox('Pilih mata pelajaran, isi nama komponen, dan masukkan bobot antara 0 sampai 100%.','error');
   let error;
   if(editingComponentId){
-    const {data:updated,error:updateError}=await db.from('assessment_components').update({name,weight}).eq('id',editingComponentId).select('id').maybeSingle();
+    const {data:updated,error:updateError}=await db.from('assessment_components').update({name,category,weight}).eq('id',editingComponentId).select('id').maybeSingle();
     error=updateError;
     if(error)return alertBox('Gagal mengubah komponen: '+error.message,'error');
     if(!updated)return alertBox('Komponen tidak berubah. Periksa izin edit Administrator di Supabase, lalu jalankan ulang supabase/admin_actions.sql.','error');
     resetComponentEditor();alertBox('Komponen berhasil diperbarui.','success');
   }else{
-    ({error}=await db.from('assessment_components').insert({name,subject_id:subject,class_id:classId||null,weight,academic_year:year,semester,created_by:currentUser.id}));
+    ({error}=await db.from('assessment_components').insert({name,category,subject_id:subject,class_id:classId||null,weight,academic_year:year,semester,created_by:currentUser.id}));
     if(error)return alertBox('Gagal menambah komponen: '+error.message,'error');
     $('componentName').value='';$('componentWeight').value='';alertBox('Komponen berhasil ditambahkan.','success');
   }
@@ -622,14 +626,18 @@ async function deactivateComponent(id){
 }
 async function prepareGrades(){
   const subject=$('gradeSubject').value,classId=$('gradeClass').value;
-  if(!subject){components=[];renderComponentList();return;}
+  if(!subject){components=[];renderComponentList();$('gradesHead').innerHTML='<tr><th>NIS</th><th>Nama</th><th>Nilai Asli</th><th>Nilai Akhir</th></tr>';$('gradesBody').innerHTML='<tr><td colspan="4" class="muted">Pilih kelas dan mata pelajaran untuk memuat nilai.</td></tr>';return;}
   const {data,error}=await db.from('assessment_components').select('*').eq('subject_id',subject).or(`class_id.is.null,class_id.eq.${classId}`).eq('is_active',true).order('created_at');
   if(error){alertBox('Gagal memuat komponen: '+error.message,'error');return;}components=data||[];renderComponentList();
-  $('gradesHead').innerHTML='<tr><th>NIS</th><th>Nama</th>'+components.map(c=>`<th>${escapeHtml(c.name)}</th>`).join('')+'</tr>';
+  $('gradesHead').innerHTML='<tr><th>NIS</th><th>Nama</th>'+components.map(c=>`<th>${escapeHtml(c.name)}</th>`).join('')+'<th>Nilai Asli</th><th>Nilai Akhir</th></tr>';
   const {data:studs}=await db.from('students').select('id,nis,full_name').eq('current_class_id',classId).eq('status','active').order('full_name');
   let allGrades=[];
   if(components.length){const ids=components.map(c=>c.id);const g=await db.from('grades').select('*').in('component_id',ids);if(g.error)alertBox(g.error.message,'error');else allGrades=g.data||[];}
-  $('gradesBody').innerHTML=(studs||[]).map(s=>`<tr><td>${escapeHtml(s.nis)}</td><td>${escapeHtml(s.full_name)}</td>`+components.map(c=>{const v=allGrades.find(g=>g.student_id===s.id&&g.component_id===c.id)?.score??'';return `<td><input class="field w-24" type="number" min="0" max="${c.max_score}" data-grade-student="${s.id}" data-grade-component="${c.id}" value="${v}"></td>`}).join('')+'</tr>').join('')||`<tr><td colspan="${components.length+2}" class="muted">Belum ada siswa pada kelas ini.</td></tr>`;
+  $('gradesBody').innerHTML=(studs||[]).map(s=>{
+    const cells=components.map(c=>{const v=allGrades.find(g=>g.student_id===s.id&&g.component_id===c.id)?.score??'';return `<td><input class="field w-24" type="number" min="0" max="${c.max_score}" data-grade-student="${s.id}" data-grade-component="${c.id}" value="${v}"></td>`}).join('');
+    const summary=calculateGradeSummary(s.id,components,allGrades);
+    return `<tr><td>${escapeHtml(s.nis)}</td><td>${escapeHtml(s.full_name)}</td>${cells}<td class="font-semibold">${summary.original===null?'—':summary.original.toFixed(2)}</td><td class="font-bold text-violet-800">${summary.final===null?'—':summary.final.toFixed(2)}</td></tr>`;
+  }).join('')||`<tr><td colspan="${components.length+4}" class="muted">Belum ada siswa pada kelas ini.</td></tr>`;
 }
 $('loadGradesBtn').onclick=()=>{resetComponentEditor();prepareGrades();};$('gradeClass').onchange=()=>{resetComponentEditor();prepareGrades();};$('gradeSubject').onchange=()=>{resetComponentEditor();prepareGrades();};
 $('gradesBody').addEventListener('change',async e=>{
@@ -638,7 +646,105 @@ $('gradesBody').addEventListener('change',async e=>{
   if(score!==null&&(score<0||score>max))return alertBox('Nilai di luar rentang.','error');
   const payload={student_id:el.dataset.gradeStudent,component_id:el.dataset.gradeComponent,score,entered_by:currentUser.id};
   const {error}=await db.from('grades').upsert(payload,{onConflict:'student_id,component_id'});
-  if(error)alertBox('Gagal menyimpan nilai: '+error.message,'error');else alertBox('Nilai tersimpan.','success');
+  if(error)alertBox('Gagal menyimpan nilai: '+error.message,'error');else{alertBox('Nilai tersimpan.','success');await prepareGrades();}
+});
+function calculateGradeSummary(studentId,componentRows,gradeRows){
+  const scored=componentRows.map(component=>({component,score:gradeRows.find(grade=>grade.student_id===studentId&&grade.component_id===component.id)?.score})).filter(item=>item.score!==null&&item.score!==undefined&&Number.isFinite(Number(item.score)));
+  const categoryMeans=['tugas','uh','ujian_akhir'].map(category=>{
+    const values=scored.filter(item=>item.component.category===category).map(item=>Number(item.score));
+    return values.length?values.reduce((sum,value)=>sum+value,0)/values.length:null;
+  });
+  const original=categoryMeans.every(value=>value!==null)?categoryMeans.reduce((sum,value)=>sum+value,0)/categoryMeans.length:null;
+  const final=scored.length?scored.reduce((sum,item)=>sum+Number(item.score)*(Number(item.component.weight)||0)/100,0):null;
+  return {original,final};
+}
+
+function renderGradeLedger(){
+  const yearFilter=$('ledgerYearFilter'),previousYear=yearFilter.value;
+  const years=[...new Set(gradeLedgerRows.map(row=>row.academic_year).filter(Boolean))].sort((a,b)=>b.localeCompare(a));
+  yearFilter.innerHTML='<option value="">Semua tahun ajaran</option>'+years.map(year=>`<option value="${escapeHtml(year)}">${escapeHtml(year)}</option>`).join('');
+  if(years.includes(previousYear))yearFilter.value=previousYear;
+  const query=$('ledgerSearch').value.trim().toLowerCase(),selectedYear=yearFilter.value;
+  const rows=gradeLedgerRows.filter(row=>(!selectedYear||row.academic_year===selectedYear)&&(!query||[row.student_nis,row.student_name,row.class_name,row.subject_name,row.academic_year].join(' ').toLowerCase().includes(query)));
+  const isAdmin=profile?.role==='administrator';
+  $('addLedgerBtn').classList.toggle('hidden',!isAdmin);$('importLedgerBtn').classList.toggle('hidden',!isAdmin);$('downloadLedgerTemplateBtn').classList.toggle('hidden',!isAdmin);
+  $('ledgerBody').innerHTML=rows.map(row=>`<tr><td>${escapeHtml(row.academic_year)}</td><td>${escapeHtml(row.semester)}</td><td>${escapeHtml(row.student_nis)}</td><td class="font-semibold">${escapeHtml(row.student_name)}</td><td>${escapeHtml(row.class_name)}</td><td>${escapeHtml(row.subject_name)}</td><td>${Number(row.original_score).toFixed(2)}</td><td class="font-bold">${Number(row.final_score).toFixed(2)}</td><td>${escapeHtml(row.notes||'—')}</td><td>${isAdmin?`<button type="button" class="text-violet-700 font-semibold mr-2" data-ledger-edit="${escapeHtml(row.id)}">Edit</button><button type="button" class="text-rose-700 font-semibold" data-ledger-delete="${escapeHtml(row.id)}">Hapus</button>`:'—'}</td></tr>`).join('')||'<tr><td colspan="10" class="text-center muted">Belum ada data legger untuk filter ini.</td></tr>';
+}
+async function loadGradeLedger(){
+  const {data,error}=await db.from('grade_ledger').select('*').order('academic_year',{ascending:false}).order('student_name');
+  if(error){gradeLedgerRows=[];renderGradeLedger();$('ledgerBody').innerHTML=`<tr><td colspan="10" class="text-red-700">Tabel legger belum siap. Jalankan file supabase/grade_ledger.sql di Supabase. (${escapeHtml(error.message)})</td></tr>`;return;}
+  gradeLedgerRows=data||[];renderGradeLedger();
+}
+function openGradeLedgerDialog(row=null){
+  $('gradeLedgerForm').reset();$('gradeLedgerId').value=row?.id||'';
+  $('gradeLedgerDialogTitle').textContent=row?'Edit Legger':'Tambah Legger Tahun Lalu';$('saveLedgerBtn').textContent=row?'Simpan Perubahan':'Simpan Legger';
+  if(row){$('ledgerAcademicYear').value=row.academic_year;$('ledgerSemester').value=row.semester;$('ledgerNis').value=row.student_nis;$('ledgerStudentName').value=row.student_name;$('ledgerClassName').value=row.class_name;$('ledgerSubjectName').value=row.subject_name;$('ledgerOriginalScore').value=row.original_score;$('ledgerFinalScore').value=row.final_score;$('ledgerNotes').value=row.notes||'';}
+  $('gradeLedgerDialog').showModal();
+}
+$('addLedgerBtn').onclick=()=>{if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengelola legger.','error');openGradeLedgerDialog();};
+$('ledgerBody').addEventListener('click',async event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.hasAttribute('data-ledger-edit'))return openGradeLedgerDialog(gradeLedgerRows.find(row=>row.id===button.dataset.ledgerEdit));
+  if(button.hasAttribute('data-ledger-delete')){
+    const row=gradeLedgerRows.find(item=>item.id===button.dataset.ledgerDelete);if(!row||profile?.role!=='administrator')return;
+    if(!confirm(`Hapus legger ${row.student_name} · ${row.subject_name} · ${row.academic_year}?`))return;
+    const {error}=await db.from('grade_ledger').delete().eq('id',row.id);
+    if(error)return alertBox('Gagal menghapus legger: '+error.message,'error');
+    await loadGradeLedger();alertBox('Data legger dihapus.','success');
+  }
+});
+$('gradeLedgerForm').addEventListener('submit',async event=>{
+  event.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengelola legger.','error');
+  const id=$('gradeLedgerId').value,original_score=Number($('ledgerOriginalScore').value),final_score=Number($('ledgerFinalScore').value);
+  if(!Number.isFinite(original_score)||!Number.isFinite(final_score)||original_score<0||original_score>100||final_score<0||final_score>100)return alertBox('Nilai Asli dan Nilai Akhir harus berada di antara 0 sampai 100.','error');
+  const payload={academic_year:$('ledgerAcademicYear').value.trim(),semester:$('ledgerSemester').value,student_nis:$('ledgerNis').value.trim(),student_name:$('ledgerStudentName').value.trim(),class_name:$('ledgerClassName').value.trim(),subject_name:$('ledgerSubjectName').value.trim(),original_score,final_score,notes:$('ledgerNotes').value.trim(),created_by:currentUser.id};
+  const query=id?db.from('grade_ledger').update(payload).eq('id',id):db.from('grade_ledger').insert(payload);
+  const {data,error}=await query.select('id').maybeSingle();
+  if(error)return alertBox('Gagal menyimpan legger: '+error.message,'error');
+  if(!data)return alertBox('Legger tidak tersimpan. Periksa izin Administrator di Supabase.','error');
+  $('gradeLedgerDialog').close();await loadGradeLedger();alertBox(id?'Legger berhasil diperbarui.':'Legger berhasil ditambahkan.','success');
+});
+$('ledgerSearch').addEventListener('input',renderGradeLedger);$('ledgerYearFilter').addEventListener('change',renderGradeLedger);
+$('downloadLedgerTemplateBtn').onclick=()=>{
+  const csv='tahun_ajaran,semester,nis,nama,kelas,mapel,nilai_asli,nilai_akhir,keterangan\r\n';
+  const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));link.download='template_legger_tahun_lalu.csv';link.click();URL.revokeObjectURL(link.href);
+};
+$('importLedgerBtn').onclick=()=>{if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengimpor legger.','error');$('ledgerCsvInput').click();};
+function parseLedgerCsv(text){
+  const firstLine=String(text).split(/\r?\n/,1)[0]||'',delimiter=(firstLine.match(/;/g)||[]).length>(firstLine.match(/,/g)||[]).length?';':',';
+  const rows=[];let row=[],cell='',quoted=false;
+  for(let i=0;i<text.length;i++){
+    const char=text[i];
+    if(char==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}
+    else if(char===delimiter&&!quoted){row.push(cell);cell='';}
+    else if(char==='\n'&&!quoted){row.push(cell);rows.push(row);row=[];cell='';}
+    else if(char!=='\r')cell+=char;
+  }
+  if(cell.length||row.length){row.push(cell);rows.push(row);}
+  return rows.filter(values=>values.some(value=>String(value).trim()!==''));
+}
+function normalizedLedgerHeader(value){return String(value||'').replace(/^\uFEFF/,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function parseLedgerScore(value){let normalized=String(value??'').trim();if(normalized.includes(','))normalized=normalized.replace(/\./g,'').replace(',','.');return Number(normalized);}
+$('ledgerCsvInput').addEventListener('change',async event=>{
+  const file=event.target.files?.[0];if(!file)return;
+  if(profile?.role!=='administrator'){event.target.value='';return alertBox('Hanya Administrator yang dapat mengimpor legger.','error');}
+  const rows=parseLedgerCsv(await file.text());if(rows.length<2){event.target.value='';return alertBox('CSV kosong atau hanya berisi judul kolom.','error');}
+  const headers=rows.shift().map(normalizedLedgerHeader),findColumn=names=>headers.findIndex(header=>names.includes(header));
+  const columns={academic_year:findColumn(['tahunajaran','academicyear']),semester:findColumn(['semester']),student_nis:findColumn(['nis','studentnis']),student_name:findColumn(['nama','namasiswa','studentname']),class_name:findColumn(['kelas','classname','class']),subject_name:findColumn(['mapel','matapelajaran','subject','subjectname']),original_score:findColumn(['nilaiasli','originalscore']),final_score:findColumn(['nilaiakhir','finalscore']),notes:findColumn(['catatan','keterangan','notes'])};
+  const required=['academic_year','semester','student_nis','student_name','class_name','subject_name','original_score','final_score'];
+  const missing=required.filter(key=>columns[key]<0);
+  if(missing.length){event.target.value='';return alertBox('Kolom wajib pada CSV belum lengkap. Unduh Template CSV untuk melihat formatnya.','error');}
+  const parsed=[],problems=[];
+  rows.forEach((values,index)=>{
+    const rowNumber=index+2,get=key=>String(values[columns[key]]??'').trim(),original_score=parseLedgerScore(get('original_score')),final_score=parseLedgerScore(get('final_score'));
+    const item={academic_year:get('academic_year'),semester:get('semester'),student_nis:get('student_nis'),student_name:get('student_name'),class_name:get('class_name'),subject_name:get('subject_name'),original_score,final_score,notes:columns.notes>=0?get('notes'):'',created_by:currentUser.id};
+    if(!item.academic_year||!['1','2'].includes(item.semester)||!item.student_nis||!item.student_name||!item.class_name||!item.subject_name||!Number.isFinite(original_score)||!Number.isFinite(final_score)||original_score<0||original_score>100||final_score<0||final_score>100)problems.push(rowNumber);else parsed.push(item);
+  });
+  if(problems.length){event.target.value='';return alertBox(`Periksa baris CSV ${problems.slice(0,8).join(', ')}. Tahun ajaran, semester 1/2, identitas siswa/mapel, dan nilai 0–100 wajib terisi.`, 'error');}
+  const {error}=await db.from('grade_ledger').upsert(parsed,{onConflict:'student_nis,academic_year,semester,subject_name'});
+  event.target.value='';
+  if(error)return alertBox('Impor legger gagal: '+error.message,'error');
+  await loadGradeLedger();alertBox(`${parsed.length} baris legger berhasil diimpor. Baris dengan NIS, tahun, semester, dan mapel sama akan diperbarui.`, 'success');
 });
 $('attendanceDate').value=new Date().toISOString().slice(0,10);
 async function prepareAttendance(){
