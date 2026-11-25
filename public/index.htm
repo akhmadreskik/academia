@@ -101,7 +101,9 @@
         </section>
 
         <section id="page-students" class="page hidden">
-          <div class="flex flex-wrap justify-between gap-3 mb-4"><div><h1 class="text-2xl font-bold">Manajemen Siswa</h1><p class="muted text-sm">Tambah, ubah, arsipkan, dan pindahkan kelas siswa.</p></div><div class="flex flex-wrap gap-2"><button id="scanRosterBtn" class="btn soft" type="button">📷 Baca Foto Absensi</button><button id="addStudentBtn" class="btn primary" type="button">＋ Tambah Siswa</button></div></div>
+          <div class="flex flex-wrap justify-between gap-3 mb-4"><div><h1 class="text-2xl font-bold">Manajemen Siswa</h1><p class="muted text-sm">Tambah satu per satu, impor banyak siswa dari CSV, ubah, arsipkan, dan pindahkan kelas.</p></div><div class="flex flex-wrap gap-2"><button id="downloadStudentTemplateBtn" class="btn soft" type="button">Unduh Template CSV</button><button id="importStudentsBtn" class="btn soft" type="button">Impor CSV</button><input id="studentsCsvInput" class="hidden" type="file" accept=".csv,text/csv"><button id="scanRosterBtn" class="btn soft" type="button">📷 Baca Foto Absensi</button><button id="addStudentBtn" class="btn primary" type="button">＋ Tambah Siswa</button></div></div>
+          <p class="muted text-xs mb-3">Unduh template, isi satu baris untuk setiap siswa, lalu pilih Impor CSV. Nama kelas harus sama dengan kelas aktif di aplikasi.</p>
+          <p id="studentCsvStatus" class="hidden text-sm mb-3" aria-live="polite"></p>
           <div class="card p-4">
             <div class="grid md:grid-cols-3 gap-3 mb-4"><input id="studentSearch" class="field" placeholder="Cari nama / NIS / NISN"><select id="studentClassFilter" class="field"><option value="">Semua kelas</option></select><select id="studentStatusFilter" class="field"><option value="active">Siswa aktif</option><option value="archived">Diarsipkan</option><option value="">Semua status</option></select></div>
             <div class="overflow-x-auto"><table class="w-full"><thead><tr><th>NIS</th><th>NISN</th><th>Nama</th><th>Kelas</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="studentsBody"></tbody></table></div>
@@ -393,6 +395,7 @@ async function loadStudents(){
 function renderStudents(){
   const q=($('studentSearch')?.value||'').toLowerCase(),cl=$('studentClassFilter')?.value||'',st=$('studentStatusFilter')?.value??'active';
   const rows=students.filter(s=>(!q||[s.nis,s.nisn,s.full_name].join(' ').toLowerCase().includes(q))&&(!cl||s.current_class_id===cl)&&(!st||s.status===st));
+  const isAdmin=profile?.role==='administrator';$('downloadStudentTemplateBtn').classList.toggle('hidden',!isAdmin);$('importStudentsBtn').classList.toggle('hidden',!isAdmin);
   $('studentsBody').innerHTML=rows.map(s=>`<tr><td>${escapeHtml(s.nis)}</td><td>${escapeHtml(s.nisn||'—')}</td><td class="font-semibold">${escapeHtml(s.full_name)}</td><td>${escapeHtml(s.classes?.name||'—')}</td><td><span class="pill">${s.status}</span></td><td><button type="button" class="text-violet-700 font-semibold mr-2" data-edit="${s.id}">Edit</button>${s.status==='active'?`<button type="button" class="text-rose-600 mr-2" data-archive="${s.id}">Arsip</button>`:''}${profile?.role==='administrator'?`<button type="button" class="text-rose-700 font-semibold" data-delete-student="${s.id}">Hapus</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="text-center muted">Belum ada data siswa.</td></tr>';
 }
 // Delegasi klik pada tbody tetap aktif walau baris siswa dirender ulang.
@@ -403,6 +406,56 @@ $('studentsBody').addEventListener('click',event=>{
   if(button.hasAttribute('data-delete-student'))return deleteStudentPermanently(button.dataset.deleteStudent);
 });
 $('studentSearch').addEventListener('input',renderStudents);$('studentClassFilter').addEventListener('change',renderStudents);$('studentStatusFilter').addEventListener('change',renderStudents);
+$('downloadStudentTemplateBtn').onclick=()=>{
+  const csv='\uFEFFnis,nisn,nama,kelas,jenis_kelamin,tanggal_lahir,kontak\r\n';
+  const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));link.download='template_import_siswa.csv';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
+  showStudentCsvStatus('Isi NIS, nama, dan kelas. Kelas harus sama dengan nama kelas aktif. Jenis kelamin opsional: L/P. Tanggal lahir gunakan format YYYY-MM-DD.',false);
+};
+$('importStudentsBtn').onclick=()=>{if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengimpor siswa.','error');$('studentsCsvInput').click();};
+function showStudentCsvStatus(message,isError=false){const el=$('studentCsvStatus');el.textContent=message;el.className='text-sm mb-3 '+(isError?'text-red-700':'text-emerald-700');el.classList.remove('hidden');}
+function studentCsvColumn(headers,aliases){return headers.findIndex(header=>aliases.includes(header));}
+$('studentsCsvInput').addEventListener('change',async event=>{
+  const file=event.target.files?.[0];if(!file)return;
+  const button=$('importStudentsBtn');button.disabled=true;
+  try{
+    if(profile?.role!=='administrator')throw new Error('Hanya Administrator yang dapat mengimpor siswa.');
+    const csvRows=parseCsvRows(await file.text());if(csvRows.length<2)throw new Error('CSV kosong atau hanya berisi judul kolom.');
+    const headers=csvRows.shift().map(normalizeCsvHeader);
+    const columns={nis:studentCsvColumn(headers,['nis']),nisn:studentCsvColumn(headers,['nisn']),name:studentCsvColumn(headers,['nama','namasiswa','fullname']),className:studentCsvColumn(headers,['kelas','namakelas','classname']),gender:studentCsvColumn(headers,['jeniskelamin','gender']),birth:studentCsvColumn(headers,['tanggallahir','birthdate']),phone:studentCsvColumn(headers,['kontak','telepon','phone'])};
+    const missing=['nis','name','className'].filter(key=>columns[key]<0);
+    if(missing.length)throw new Error('Kolom wajib belum lengkap. Gunakan template CSV: nis, nama, kelas.');
+    const activeClasses=classes.filter(item=>item.is_active),classMap=new Map(activeClasses.map(item=>[item.name.trim().toLowerCase(),item]));
+    if(!activeClasses.length)throw new Error('Belum ada kelas aktif. Tambahkan kelas sebelum mengimpor siswa.');
+    const candidates=[],problems=[];
+    csvRows.forEach((values,index)=>{
+      const rowNumber=index+2,get=key=>columns[key]<0?'':String(values[columns[key]]??'').trim();
+      const nis=get('nis'),nisn=get('nisn')||null,name=get('name'),className=get('className'),classItem=classMap.get(className.toLowerCase());
+      const rawGender=get('gender').toLowerCase();let gender=null;
+      if(rawGender){if(['l','laki-laki','laki laki','male'].includes(rawGender))gender='L';else if(['p','perempuan','female'].includes(rawGender))gender='P';else problems.push(`baris ${rowNumber}: jenis kelamin harus L atau P`);}
+      const birth_date=get('birth');if(birth_date){const parsedDate=new Date(birth_date+'T00:00:00Z');if(!/^\d{4}-\d{2}-\d{2}$/.test(birth_date)||Number.isNaN(parsedDate.getTime())||parsedDate.toISOString().slice(0,10)!==birth_date)problems.push(`baris ${rowNumber}: tanggal lahir harus tanggal valid berformat YYYY-MM-DD`);}
+      if(!nis)problems.push(`baris ${rowNumber}: NIS kosong`);if(!name)problems.push(`baris ${rowNumber}: nama kosong`);if(!className)problems.push(`baris ${rowNumber}: kelas kosong`);else if(!classItem)problems.push(`baris ${rowNumber}: kelas "${className}" tidak ditemukan atau nonaktif`);
+      if(nis&&name&&classItem)candidates.push({nis,nisn,full_name:name,gender,birth_date:birth_date||null,phone:get('phone')||null,current_class_id:classItem.id,status:'active',created_by:currentUser.id});
+    });
+    if(problems.length)throw new Error('Perbaiki isi CSV terlebih dahulu. '+problems.slice(0,6).join('; '));
+    const seenNis=new Set(),seenNisn=new Set(),existingNis=new Set(students.map(item=>String(item.nis||'').trim().toLowerCase())),existingNisn=new Set(students.map(item=>String(item.nisn||'').trim().toLowerCase()).filter(Boolean));
+    const ready=[];let skipped=0;
+    for(const row of candidates){const nisKey=row.nis.toLowerCase(),nisnKey=row.nisn?.toLowerCase()||'';const duplicate=existingNis.has(nisKey)||seenNis.has(nisKey)||(nisnKey&&(existingNisn.has(nisnKey)||seenNisn.has(nisnKey)));if(duplicate){skipped++;continue;}seenNis.add(nisKey);if(nisnKey)seenNisn.add(nisnKey);ready.push(row);}
+    if(!ready.length)throw new Error(`Tidak ada siswa baru untuk disimpan. ${skipped} baris merupakan duplikat NIS/NISN.`);
+    const classCounts={};ready.forEach(row=>{const className=classes.find(c=>c.id===row.current_class_id)?.name||'Kelas';classCounts[className]=(classCounts[className]||0)+1;});
+    if(!confirm(`Impor ${ready.length} siswa dari CSV?\n${Object.entries(classCounts).map(([name,count])=>`${name}: ${count}`).join('\n')}\n${skipped} baris duplikat akan dilewati.`))return;
+    showStudentCsvStatus('Sedang menyimpan data siswa…');let saved=0,failed=0,historyFailed=0;const failureMessages=[];
+    for(let start=0;start<ready.length;start+=50){
+      const batch=ready.slice(start,start+50),{data,error}=await db.from('students').insert(batch).select('id,current_class_id');
+      if(error){failed+=batch.length;failureMessages.push(error.message);continue;}
+      saved+=(data||[]).length;
+      const today=new Date().toISOString().slice(0,10),history=(data||[]).map(item=>({student_id:item.id,class_id:item.current_class_id,start_date:today,recorded_by:currentUser.id}));
+      if(history.length){const {error:historyError}=await db.from('student_class_history').insert(history);if(historyError){historyFailed+=history.length;failureMessages.push(historyError.message);}}
+    }
+    await loadStudents();
+    showStudentCsvStatus(`Impor selesai: ${saved} siswa tersimpan, ${skipped} duplikat dilewati, ${failed} gagal.${historyFailed?` Riwayat kelas belum tersimpan untuk ${historyFailed} siswa.`:''}${failureMessages.length?` Pesan database: ${failureMessages[0]}`:''}`,failed>0||historyFailed>0);
+  }catch(error){showStudentCsvStatus(error?.message||String(error),true);}
+  finally{event.target.value='';button.disabled=false;}
+});
 $('addStudentBtn').onclick=()=>{ $('studentForm').reset();$('studentId').value='';$('studentDialogTitle').textContent='Tambah Siswa';fillSelect('fClass',classes.filter(x=>x.is_active));$('studentDialog').showModal();};
 async function editStudent(id){
   let s=students.find(x=>x.id===id);
@@ -710,7 +763,7 @@ $('downloadLedgerTemplateBtn').onclick=()=>{
   const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));link.download='template_legger_tahun_lalu.csv';link.click();URL.revokeObjectURL(link.href);
 };
 $('importLedgerBtn').onclick=()=>{if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengimpor legger.','error');$('ledgerCsvInput').click();};
-function parseLedgerCsv(text){
+function parseCsvRows(text){
   const firstLine=String(text).split(/\r?\n/,1)[0]||'',delimiter=(firstLine.match(/;/g)||[]).length>(firstLine.match(/,/g)||[]).length?';':',';
   const rows=[];let row=[],cell='',quoted=false;
   for(let i=0;i<text.length;i++){
@@ -723,13 +776,13 @@ function parseLedgerCsv(text){
   if(cell.length||row.length){row.push(cell);rows.push(row);}
   return rows.filter(values=>values.some(value=>String(value).trim()!==''));
 }
-function normalizedLedgerHeader(value){return String(value||'').replace(/^\uFEFF/,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function normalizeCsvHeader(value){return String(value||'').replace(/^\uFEFF/,'').toLowerCase().replace(/[^a-z0-9]/g,'');}
 function parseLedgerScore(value){let normalized=String(value??'').trim();if(normalized.includes(','))normalized=normalized.replace(/\./g,'').replace(',','.');return Number(normalized);}
 $('ledgerCsvInput').addEventListener('change',async event=>{
   const file=event.target.files?.[0];if(!file)return;
   if(profile?.role!=='administrator'){event.target.value='';return alertBox('Hanya Administrator yang dapat mengimpor legger.','error');}
-  const rows=parseLedgerCsv(await file.text());if(rows.length<2){event.target.value='';return alertBox('CSV kosong atau hanya berisi judul kolom.','error');}
-  const headers=rows.shift().map(normalizedLedgerHeader),findColumn=names=>headers.findIndex(header=>names.includes(header));
+  const rows=parseCsvRows(await file.text());if(rows.length<2){event.target.value='';return alertBox('CSV kosong atau hanya berisi judul kolom.','error');}
+  const headers=rows.shift().map(normalizeCsvHeader),findColumn=names=>headers.findIndex(header=>names.includes(header));
   const columns={academic_year:findColumn(['tahunajaran','academicyear']),semester:findColumn(['semester']),student_nis:findColumn(['nis','studentnis']),student_name:findColumn(['nama','namasiswa','studentname']),class_name:findColumn(['kelas','classname','class']),subject_name:findColumn(['mapel','matapelajaran','subject','subjectname']),original_score:findColumn(['nilaiasli','originalscore']),final_score:findColumn(['nilaiakhir','finalscore']),notes:findColumn(['catatan','keterangan','notes'])};
   const required=['academic_year','semester','student_nis','student_name','class_name','subject_name','original_score','final_score'];
   const missing=required.filter(key=>columns[key]<0);
