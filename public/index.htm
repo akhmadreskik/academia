@@ -230,7 +230,7 @@
 <dialog id="classDialog"><form id="classForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="classDialogTitle" class="font-bold">Tambah Kelas</h2><button type="button" class="text-xl" data-close="classDialog">×</button></div><input id="classId" type="hidden"><label class="text-sm">Nama kelas<input id="newClassName" class="field mt-1" placeholder="Contoh XI-7" required></label><label class="text-sm block mt-3">Tahun ajaran<input id="newClassYear" class="field mt-1" placeholder="Contoh 2026/2027 atau 2026"></label><div class="flex justify-end mt-5"><button id="saveClassBtn" type="submit" class="btn primary">Simpan Kelas</button></div></form></dialog>
 <dialog id="subjectDialog"><form id="subjectForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="subjectDialogTitle" class="font-bold">Tambah Mata Pelajaran</h2><button type="button" class="text-xl" data-close="subjectDialog">×</button></div><input id="subjectId" type="hidden"><label class="text-sm">Nama mata pelajaran<input id="newSubjectName" class="field mt-1" placeholder="Contoh Matematika" maxlength="120" required></label><label id="subjectStatusField" class="text-sm block mt-3 hidden">Status<select id="subjectActive" class="field mt-1"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="subjectDialog">Batal</button><button id="subjectSubmitBtn" type="submit" class="btn primary">Simpan Mapel</button></div></form></dialog>
 
-<dialog id="interactiveTopicDialog"><form id="interactiveTopicForm" class="p-6"><div class="flex justify-between items-center mb-4"><h2 class="font-bold text-lg">Tambah Topik</h2><button type="button" class="text-xl" data-close="interactiveTopicDialog">×</button></div><label class="block text-sm font-semibold mb-3">Nama topik *<input id="interactiveTopicName" class="field mt-1" maxlength="120" placeholder="Contoh Stoikiometri" required></label><label class="block text-sm font-semibold mb-3">Deskripsi<input id="interactiveTopicDescriptionInput" class="field mt-1" maxlength="250" placeholder="Kumpulan materi pembelajaran"></label><label class="block text-sm font-semibold">Link folder materi (opsional)<input id="interactiveTopicDriveUrlInput" class="field mt-1" type="url" placeholder="https://drive.google.com/..."><span class="muted text-xs">Link bisa ditambahkan sekarang atau nanti.</span></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="interactiveTopicDialog">Batal</button><button id="saveInteractiveTopicBtn" type="submit" class="btn primary">Simpan Topik</button></div></form></dialog>
+<dialog id="interactiveTopicDialog"><form id="interactiveTopicForm" class="p-6"><div class="flex justify-between items-center mb-4"><h2 id="interactiveTopicDialogTitle" class="font-bold text-lg">Tambah Topik</h2><button type="button" class="text-xl" data-close="interactiveTopicDialog">×</button></div><input id="interactiveTopicId" type="hidden"><label class="block text-sm font-semibold mb-3">Nama topik *<input id="interactiveTopicName" class="field mt-1" maxlength="120" placeholder="Contoh Stoikiometri" required></label><label class="block text-sm font-semibold mb-3">Deskripsi<input id="interactiveTopicDescriptionInput" class="field mt-1" maxlength="250" placeholder="Kumpulan materi pembelajaran"></label><label class="block text-sm font-semibold">Link folder materi (opsional)<input id="interactiveTopicDriveUrlInput" class="field mt-1" type="url" placeholder="https://drive.google.com/..."><span class="muted text-xs">Link bisa ditambahkan sekarang atau nanti.</span></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="interactiveTopicDialog">Batal</button><button id="saveInteractiveTopicBtn" type="submit" class="btn primary">Simpan Topik</button></div></form></dialog>
 
 <dialog id="gradeLedgerDialog"><form id="gradeLedgerForm" class="p-6"><div class="flex justify-between items-center mb-4"><h2 id="gradeLedgerDialogTitle" class="font-bold text-lg">Tambah Legger Tahun Lalu</h2><button type="button" class="text-xl" data-close="gradeLedgerDialog">×</button></div><input id="gradeLedgerId" type="hidden"><div class="grid md:grid-cols-2 gap-3"><label class="text-sm">Tahun ajaran *<input id="ledgerAcademicYear" class="field mt-1" placeholder="2025/2026" required></label><label class="text-sm">Semester *<select id="ledgerSemester" class="field mt-1"><option value="1">Semester 1</option><option value="2">Semester 2</option></select></label><label class="text-sm">NIS *<input id="ledgerNis" class="field mt-1" required></label><label class="text-sm">Nama siswa *<input id="ledgerStudentName" class="field mt-1" required></label><label class="text-sm">Kelas *<input id="ledgerClassName" class="field mt-1" placeholder="XI-3" required></label><label class="text-sm">Mata pelajaran *<input id="ledgerSubjectName" class="field mt-1" required></label><label class="text-sm">Nilai Asli *<input id="ledgerOriginalScore" class="field mt-1" type="number" min="0" max="100" step="0.01" required></label><label class="text-sm">Nilai Akhir *<input id="ledgerFinalScore" class="field mt-1" type="number" min="0" max="100" step="0.01" required></label><label class="text-sm md:col-span-2">Catatan<input id="ledgerNotes" class="field mt-1" maxlength="500" placeholder="Opsional"></label></div><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="gradeLedgerDialog">Batal</button><button id="saveLedgerBtn" type="submit" class="btn primary">Simpan Legger</button></div></form></dialog>
 
@@ -325,7 +325,7 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));
 function renderInteractiveTopics(){
   const list=$('interactiveTopicList'),isAdmin=profile?.role==='administrator';
-  list.innerHTML=interactiveTopics.map(topic=>`<button type="button" class="card p-5 text-left hover:border-violet-300 hover:shadow-md transition" data-topic-open="${escapeHtml(topic.id)}"><span class="text-2xl">📁</span><h2 class="font-bold mt-3">${escapeHtml(topic.name)}${topic.is_active===false?' · Nonaktif':''}</h2><p class="muted text-sm mt-1">${escapeHtml(topic.description||'Kumpulan tautan pembelajaran '+topic.name+'.')}</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>`).join('');
+  list.innerHTML=interactiveTopics.map(topic=>`<article class="card p-5 flex flex-col hover:border-violet-300 hover:shadow-md transition"><button type="button" class="text-left flex-1" data-topic-open="${escapeHtml(topic.id)}"><span class="text-2xl">📁</span><h2 class="font-bold mt-3">${escapeHtml(topic.name)}${topic.is_active===false?' · Nonaktif':''}</h2><p class="muted text-sm mt-1">${escapeHtml(topic.description||'Kumpulan tautan pembelajaran '+topic.name+'.')}</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>${isAdmin?`<div class="flex gap-2 border-t border-slate-100 pt-3 mt-4"><button type="button" class="btn soft" data-topic-edit="${escapeHtml(topic.id)}">Edit Topik</button><button type="button" class="btn danger" data-topic-delete="${escapeHtml(topic.id)}">Hapus Topik</button></div>`:''}</article>`).join('');
   if(isAdmin)list.insertAdjacentHTML('beforeend','<button type="button" id="addTopicCardBtn" class="card p-5 border-dashed text-left hover:border-violet-300"><span class="text-2xl">＋</span><h2 class="font-bold mt-3">Tambah Topik</h2><p class="muted text-sm mt-1">Buat folder topik baru untuk materi pembelajaran.</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Tambah →</span></button>');
   $('addInteractiveTopicBtn').classList.toggle('hidden',!isAdmin);
   $('interactiveTopicError').classList.add('hidden');
@@ -347,26 +347,55 @@ function openInteractiveTopic(topic){
 }
 $('interactiveTopicList').addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button)return;
-  if(button.id==='addTopicCardBtn')return $('interactiveTopicDialog').showModal();
+  if(button.id==='addTopicCardBtn')return openInteractiveTopicForm();
+  if(button.hasAttribute('data-topic-edit')){
+    if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengedit topik.','error');
+    return openInteractiveTopicForm(interactiveTopics.find(topic=>topic.id===button.dataset.topicEdit));
+  }
+  if(button.hasAttribute('data-topic-delete'))return deleteInteractiveTopic(button.dataset.topicDelete);
   if(button.hasAttribute('data-topic-open'))return openInteractiveTopic(interactiveTopics.find(topic=>topic.id===button.dataset.topicOpen));
 });
+function openInteractiveTopicForm(topic=null){
+  $('interactiveTopicForm').reset();$('interactiveTopicId').value=topic?.id||'';
+  $('interactiveTopicDialogTitle').textContent=topic?'Edit Topik':'Tambah Topik';
+  $('saveInteractiveTopicBtn').textContent=topic?'Simpan Perubahan':'Simpan Topik';
+  if(topic){$('interactiveTopicName').value=topic.name;$('interactiveTopicDescriptionInput').value=topic.description||'';$('interactiveTopicDriveUrlInput').value=topic.drive_url||'';}
+  $('interactiveTopicDialog').showModal();
+}
+async function deleteInteractiveTopic(id){
+  const topic=interactiveTopics.find(item=>item.id===id);if(!topic)return;
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menghapus topik.','error');
+  if(!confirm(`Hapus topik "${topic.name}" dari Ruang Interaktif? Tautan dan folder di Google Drive tidak ikut dihapus.`))return;
+  const {data,error}=await db.from('interactive_topics').delete().eq('id',id).select('id').maybeSingle();
+  if(error)return alertBox('Gagal menghapus topik: '+error.message,'error');
+  if(!data)return alertBox('Topik tidak terhapus. Periksa izin Administrator di Supabase.','error');
+  await loadInteractiveTopics();alertBox(`Topik ${topic.name} berhasil dihapus dari ACADEMIA.`,'success');
+}
 $('addInteractiveTopicBtn').onclick=()=>{
   if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah topik.','error');
-  $('interactiveTopicForm').reset();$('interactiveTopicDialog').showModal();
+  openInteractiveTopicForm();
 };
 $('interactiveBackBtn').addEventListener('click',()=>{$('interactiveTopicDetail').classList.add('hidden');$('interactiveTopicList').classList.remove('hidden');});
 $('interactiveTopicForm').addEventListener('submit',async event=>{
-  event.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah topik.','error');
+  event.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengelola topik.','error');
+  const id=$('interactiveTopicId').value;
   const name=$('interactiveTopicName').value.trim(),description=$('interactiveTopicDescriptionInput').value.trim(),drive_url=$('interactiveTopicDriveUrlInput').value.trim()||null;
   if(!name)return alertBox('Nama topik wajib diisi.','error');
   if(drive_url){try{if(new URL(drive_url).protocol!=='https:')return alertBox('Link materi harus menggunakan https://.','error');}catch{return alertBox('Format link materi tidak valid.','error');}}
-  if(interactiveTopics.some(topic=>topic.name.trim().toLowerCase()===name.toLowerCase()))return alertBox('Topik dengan nama tersebut sudah ada.','error');
+  if(interactiveTopics.some(topic=>topic.id!==id&&topic.name.trim().toLowerCase()===name.toLowerCase()))return alertBox('Topik dengan nama tersebut sudah ada.','error');
   const slug=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'topik';
-  const sort_order=interactiveTopics.reduce((max,topic)=>Math.max(max,Number(topic.sort_order)||0),0)+10;
-  const {data,error}=await db.from('interactive_topics').insert({slug,name,description,drive_url,is_active:true,sort_order,created_by:currentUser.id}).select('id').maybeSingle();
-  if(error)return alertBox('Gagal menambah topik: '+error.message,'error');
-  if(!data)return alertBox('Topik tidak tersimpan. Periksa izin Administrator di Supabase.','error');
-  $('interactiveTopicDialog').close();await loadInteractiveTopics();alertBox(`Topik ${name} berhasil ditambahkan.`,'success');
+  let data,error;
+  if(id){
+    ({data,error}=await db.from('interactive_topics').update({slug,name,description,drive_url}).eq('id',id).select('id').maybeSingle());
+    if(error)return alertBox('Gagal mengedit topik: '+error.message,'error');
+    if(!data)return alertBox('Topik tidak berubah. Periksa izin Edit Topik Administrator di Supabase.','error');
+  }else{
+    const sort_order=interactiveTopics.reduce((max,topic)=>Math.max(max,Number(topic.sort_order)||0),0)+10;
+    ({data,error}=await db.from('interactive_topics').insert({slug,name,description,drive_url,is_active:true,sort_order,created_by:currentUser.id}).select('id').maybeSingle());
+    if(error)return alertBox('Gagal menambah topik: '+error.message,'error');
+    if(!data)return alertBox('Topik tidak tersimpan. Periksa izin Administrator di Supabase.','error');
+  }
+  $('interactiveTopicDialog').close();await loadInteractiveTopics();alertBox(id?`Topik ${name} berhasil diperbarui.`:`Topik ${name} berhasil ditambahkan.`,'success');
 });
 $('loginForm').addEventListener('submit',async e=>{
   e.preventDefault(); $('loginError').textContent='';
