@@ -16,16 +16,38 @@
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root{--navy:#21103c;--violet:#7955d9;--lav:#b69aff}
-    body{background:#f8fafc;color:#0f172a;font-family:Inter,ui-sans-serif,system-ui}
-    .btn{padding:.58rem .9rem;border-radius:.7rem;font-weight:600;font-size:.875rem}
-    .btn:disabled{opacity:.45;cursor:not-allowed}
-    .primary{background:var(--violet);color:white}.primary:hover{filter:brightness(.95)}
-    .soft{background:#f1edff;color:#5939b5}.danger{background:#fee2e2;color:#991b1b}
-    .field{width:100%;border:1px solid #e2e8f0;border-radius:.65rem;padding:.65rem .75rem;background:white}
-    .card{background:white;border:1px solid #e9eaf0;border-radius:1rem;box-shadow:0 5px 20px #0f172a08}
-    .muted{color:#64748b}.navbtn{display:flex;align-items:center;gap:.65rem;width:100%;padding:.7rem .8rem;border-radius:.7rem;text-align:left}
-    .navbtn.active{background:#eee9ff;color:#5b3bb8;font-weight:700}
+    :root{--navy:#21103c;--navy-soft:#2b174b;--violet:#7955d9;--violet-dark:#603fc0;--lav:#b69aff;--page:#f7f8fc;--line:#e8eaf2}
+    html{scroll-behavior:smooth}
+    body{background:var(--page);color:#101828;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em}
+    button,a,input,select,textarea{transition:color .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease,opacity .18s ease}
+    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #a78bfa80;outline-offset:2px}
+    .btn{padding:.62rem .95rem;border-radius:.75rem;font-weight:650;font-size:.875rem;box-shadow:0 1px 2px #1018280b}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .primary{background:var(--violet);color:white}.primary:hover{background:var(--violet-dark);box-shadow:0 5px 14px #7955d933;transform:translateY(-1px)}
+    .soft{background:#f1edff;color:#5939b5}.soft:hover{background:#e8e0ff;transform:translateY(-1px)}.danger{background:#fee2e2;color:#991b1b}.danger:hover{background:#fecaca;transform:translateY(-1px)}
+    .field{width:100%;border:1px solid #e2e8f0;border-radius:.7rem;padding:.68rem .8rem;background:white}
+    .field:focus{border-color:#9b7bea;box-shadow:0 0 0 3px #7955d91a;outline:none}
+    .card{background:white;border:1px solid var(--line);border-radius:1rem;box-shadow:0 5px 22px #0f172a08;transition:border-color .2s ease,box-shadow .2s ease}
+    .card:hover{border-color:#ddd6ef;box-shadow:0 8px 26px #21103c0d}
+    .muted{color:#64748b}
+    .sidebar{background:linear-gradient(180deg,var(--navy) 0%,#24113f 62%,#1d0d35 100%);box-shadow:12px 0 36px #21103c12}
+    .brand-mark{display:grid;place-items:center;width:2.7rem;height:2.7rem;border:1px solid #ffffff25;border-radius:.9rem;background:#ffffff14;color:#fff;box-shadow:inset 0 1px #ffffff20}
+    .nav-section-label{padding:.85rem .75rem .35rem;color:#a996c4;font-size:.64rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
+    .navbtn{position:relative;display:flex;align-items:center;gap:.75rem;width:100%;padding:.68rem .8rem;border:1px solid transparent;border-radius:.78rem;text-align:left;color:#e8e0f4;font-size:.9rem;font-weight:550;cursor:pointer}
+    .navbtn svg{width:1.13rem;height:1.13rem;flex:0 0 auto;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.86}
+    #sideNav .navbtn:hover{background:#ffffff10;color:white;border-color:#ffffff12;transform:translateX(2px)}
+    #sideNav .navbtn.active{background:linear-gradient(100deg,#eee9ff 0%,#f5f1ff 100%);color:#5b3bb8;border-color:#ffffff70;font-weight:750;box-shadow:0 5px 18px #12092125}
+    #sideNav .navbtn.active svg{opacity:1}
+    #mobileNav{scrollbar-width:none;scroll-snap-type:x proximity}
+    #mobileNav::-webkit-scrollbar{display:none}
+    #mobileNav .navbtn{width:auto;flex:0 0 auto;scroll-snap-align:start;gap:.45rem;padding:.55rem .72rem;border-color:transparent;color:#526078;font-size:.82rem}
+    #mobileNav .navbtn:hover{background:#f3f0ff;color:#5939b5}
+    #mobileNav .navbtn.active{background:#eee9ff;color:#5b3bb8;border-color:#e0d6ff;font-weight:750}
+    .page:not(.hidden){animation:page-enter .24s ease both}
+    @keyframes page-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+    tbody tr{transition:background-color .16s ease}tbody tr:hover{background:#faf9ff}
+    #appView main>header{position:sticky;top:0;z-index:30;background:#ffffffed;backdrop-filter:blur(14px)}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
     th,td{padding:.7rem .65rem;border-bottom:1px solid #eef0f4;text-align:left;font-size:.85rem;white-space:nowrap}
     th{color:#64748b;font-weight:700;background:#fafafa}
     .pill{font-size:.72rem;padding:.2rem .5rem;border-radius:999px;background:#f1f5f9}
@@ -55,43 +77,52 @@
 
 <div id="appView" class="hidden min-h-screen">
   <div class="flex min-h-screen">
-    <aside class="hidden lg:flex w-64 flex-col p-4 text-white" style="background:#21103c">
-      <div class="px-3 py-4 text-xl font-extrabold tracking-wide">ACADEMIA</div>
-      <div class="text-xs text-violet-200 px-3 mb-5">Academic Management System</div>
-      <nav id="sideNav" class="space-y-1 flex-1 overflow-y-auto">
-        <button class="navbtn" data-page="dashboard">▦ Dashboard</button>
-        <button class="navbtn" data-page="students">♙ Data Siswa</button>
-        <button class="navbtn" data-page="classes">▤ Manajemen Kelas</button>
-        <button class="navbtn" data-page="grades">▦ Manajemen Nilai</button>
-        <button class="navbtn" data-page="soal-uh">▣ Kumpulan Soal UH</button>
-        <button class="navbtn" data-page="soal-osn">🏅 Soal OSN</button>
-        <button class="navbtn" data-page="learning-docs">📚 Perangkat Pembelajaran</button>
-        <button class="navbtn" data-page="interactive">🎮 Ruang Interaktif</button>
-        <button class="navbtn" data-page="attendance">✓ Absensi</button>
-        <button class="navbtn" data-page="reports">▧ Laporan</button>
-        <button class="navbtn" data-page="notifications">◉ Notifikasi</button>
-        <button class="navbtn" data-page="audit">◷ Audit Trail</button>
+    <aside class="sidebar hidden lg:flex sticky top-0 self-start h-screen w-64 xl:w-72 flex-col p-4 text-white">
+      <div class="flex items-center gap-3 px-2 pt-3 pb-2"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true"><path d="M4 19V5l8-2 8 2v14l-8 2-8-2Z"/><path d="m4 5 8 2 8-2M12 7v14M8 10l1.5.4M8 14l1.5.4M16 10l-1.5.4M16 14l-1.5.4"/></svg></div><div><div class="text-lg font-extrabold tracking-wide leading-tight">ACADEMIA</div><div class="text-[.65rem] text-violet-200 mt-1">Academic workspace</div></div></div>
+      <div class="h-px bg-white/10 mx-2 my-4"></div>
+      <nav id="sideNav" class="flex-1 overflow-y-auto pb-3">
+        <div class="nav-section-label">Akademik</div>
+        <div class="space-y-1">
+          <button class="navbtn" data-page="dashboard" data-icon="dashboard" data-label="Dashboard"></button>
+          <button class="navbtn" data-page="students" data-icon="students" data-label="Data Siswa"></button>
+          <button class="navbtn" data-page="classes" data-icon="classes" data-label="Manajemen Kelas"></button>
+          <button class="navbtn" data-page="grades" data-icon="grades" data-label="Manajemen Nilai"></button>
+          <button class="navbtn" data-page="attendance" data-icon="attendance" data-label="Absensi"></button>
+          <button class="navbtn" data-page="reports" data-icon="reports" data-label="Laporan"></button>
+        </div>
+        <div class="nav-section-label mt-2">Bahan Pembelajaran</div>
+        <div class="space-y-1">
+          <button class="navbtn" data-page="soal-uh" data-icon="questions" data-label="Kumpulan Soal UH"></button>
+          <button class="navbtn" data-page="soal-osn" data-icon="medal" data-label="Soal OSN"></button>
+          <button class="navbtn" data-page="learning-docs" data-icon="book" data-label="Perangkat Pembelajaran"></button>
+          <button class="navbtn" data-page="interactive" data-icon="game" data-label="Ruang Interaktif"></button>
+        </div>
+        <div class="nav-section-label mt-2">Sistem</div>
+        <div class="space-y-1">
+          <button class="navbtn" data-page="notifications" data-icon="bell" data-label="Notifikasi"></button>
+          <button class="navbtn" data-page="audit" data-icon="history" data-label="Audit Trail"></button>
+        </div>
       </nav>
-      <div class="mt-auto px-3 text-xs text-violet-200">Supabase Cloud</div>
+      <div class="mt-3 mx-1 rounded-xl border border-white/10 bg-white/[.06] px-3 py-3"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,.12)]"></span><span class="text-xs font-semibold text-white/90">Cloud terhubung</span></div><div class="text-[.67rem] text-violet-200 mt-1.5 pl-4">Data tersinkron ke Supabase</div></div>
     </aside>
     <main class="flex-1 min-w-0">
       <header class="bg-white border-b border-slate-200 px-4 md:px-7 py-4 flex justify-between items-center">
         <div><div id="pageTitle" class="font-bold text-lg">Dashboard</div><div id="userLine" class="text-xs muted"></div></div>
         <button id="logoutBtn" class="btn soft">Logout</button>
       </header>
-      <nav id="mobileNav" class="lg:hidden bg-white border-b border-slate-200 px-3 py-2 flex gap-2 overflow-x-auto">
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="dashboard">▦ Dashboard</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="students">♙ Siswa</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="classes">▤ Kelas</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="grades">▦ Nilai</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="soal-uh">▣ Soal UH</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="soal-osn">🏅 Soal OSN</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="learning-docs">📚 Perangkat Pembelajaran</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="interactive">🎮 Ruang Interaktif</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="attendance">✓ Absensi</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="reports">▧ Laporan</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="notifications">◉ Notifikasi</button>
-        <button class="navbtn whitespace-nowrap text-sm text-slate-700" data-page="audit">◷ Audit</button>
+      <nav id="mobileNav" class="lg:hidden bg-white/95 backdrop-blur border-b border-slate-200 px-3 py-2 flex gap-2 overflow-x-auto shadow-sm">
+        <button class="navbtn whitespace-nowrap" data-page="dashboard" data-icon="dashboard" data-label="Dashboard"></button>
+        <button class="navbtn whitespace-nowrap" data-page="students" data-icon="students" data-label="Siswa"></button>
+        <button class="navbtn whitespace-nowrap" data-page="classes" data-icon="classes" data-label="Kelas"></button>
+        <button class="navbtn whitespace-nowrap" data-page="grades" data-icon="grades" data-label="Nilai"></button>
+        <button class="navbtn whitespace-nowrap" data-page="attendance" data-icon="attendance" data-label="Absensi"></button>
+        <button class="navbtn whitespace-nowrap" data-page="reports" data-icon="reports" data-label="Laporan"></button>
+        <button class="navbtn whitespace-nowrap" data-page="soal-uh" data-icon="questions" data-label="Soal UH"></button>
+        <button class="navbtn whitespace-nowrap" data-page="soal-osn" data-icon="medal" data-label="Soal OSN"></button>
+        <button class="navbtn whitespace-nowrap" data-page="learning-docs" data-icon="book" data-label="Perangkat"></button>
+        <button class="navbtn whitespace-nowrap" data-page="interactive" data-icon="game" data-label="Interaktif"></button>
+        <button class="navbtn whitespace-nowrap" data-page="notifications" data-icon="bell" data-label="Notifikasi"></button>
+        <button class="navbtn whitespace-nowrap" data-page="audit" data-icon="history" data-label="Audit"></button>
       </nav>
       <div class="p-4 md:p-7 max-w-7xl mx-auto">
         <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
@@ -218,6 +249,28 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
 let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], gradeLedgerRows=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null;
+const navIconMarkup={
+  dashboard:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  students:'<path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20"/><circle cx="10" cy="7.5" r="3.5"/><path d="M16.5 4.3a3.5 3.5 0 0 1 0 6.8M20 20v-1.5a3.5 3.5 0 0 0-2.5-3.35"/>',
+  classes:'<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8M8 11h8"/>',
+  grades:'<path d="M3 3v18h18"/><path d="M8 16v-4M13 16V7M18 16v-7"/>',
+  questions:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+  medal:'<circle cx="12" cy="8" r="5"/><path d="m8.5 12-1 9 4.5-2.5 4.5 2.5-1-9"/><path d="m10.4 8 1.1 1.1L13.8 7"/>',
+  book:'<path d="M12 7v14M3 18V5a2 2 0 0 1 2-2h3a4 4 0 0 1 4 4 4 4 0 0 1 4-4h3a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-3a4 4 0 0 0-4 2 4 4 0 0 0-4-2H5a2 2 0 0 1-2-2Z"/>',
+  game:'<path d="M6 11h4M8 9v4M15 10h.01M18 12h.01"/><path d="M6.5 6h11a3 3 0 0 1 2.9 2.2l1 4a3 3 0 0 1-4.6 3.2l-2.1-1.4H9.3l-2.1 1.4a3 3 0 0 1-4.6-3.2l1-4A3 3 0 0 1 6.5 6Z"/>',
+  attendance:'<circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16.5 9"/>',
+  reports:'<path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="7" rx=".7"/><rect x="13" y="7" width="3" height="11" rx=".7"/><rect x="19" y="4" width="2" height="14" rx=".7"/>',
+  bell:'<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+  history:'<path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><path d="M3 3v5h5M12 7v5l3.5 2"/>'
+};
+function applyNavigationIcons(){
+  const svgNS='http://www.w3.org/2000/svg';
+  document.querySelectorAll('.navbtn[data-page][data-icon]').forEach(button=>{
+    const icon=document.createElementNS(svgNS,'svg');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('fill','none');icon.setAttribute('aria-hidden','true');icon.innerHTML=navIconMarkup[button.dataset.icon]||navIconMarkup.dashboard;
+    const label=document.createElement('span');label.textContent=button.dataset.label||button.dataset.page;button.replaceChildren(icon,label);
+  });
+}
+applyNavigationIcons();
 
 function alertBox(message,type='info'){
   const el=$('alert'); el.textContent=message; el.className='mb-4 p-3 rounded-lg text-sm '+(type==='error'?'bg-red-50 text-red-700':type==='success'?'bg-emerald-50 text-emerald-700':'bg-violet-50 text-violet-800');
@@ -229,6 +282,8 @@ function showPage(page){
   $('page-'+page)?.classList.remove('hidden');
   $('pageTitle').textContent=({dashboard:'Dashboard',students:'Data Siswa',classes:'Manajemen Kelas',grades:'Manajemen Nilai','soal-uh':'Kumpulan Soal UH','soal-osn':'Kumpulan Soal OSN','learning-docs':'Perangkat Pembelajaran',interactive:'Ruang Interaktif',attendance:'Absensi',reports:'Laporan',notifications:'Notifikasi',audit:'Audit Trail'})[page]||page;
   document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
+  const mobileActive=[...document.querySelectorAll('#mobileNav .navbtn')].find(button=>button.dataset.page===page);
+  if(mobileActive)mobileActive.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest',inline:'center'});
   if(page==='dashboard')loadDashboard();
   if(page==='students')renderStudents();
   if(page==='classes'){renderClasses();renderSubjects();}
