@@ -52,6 +52,8 @@
     #appView main>div:last-child{padding-bottom:calc(1rem + env(safe-area-inset-bottom))}
     #pageTitle{max-width:min(52vw,34rem);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     #userLine{max-width:58vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .role-avatar{display:grid;place-items:center;width:2rem;height:2rem;flex:0 0 auto;border:2px solid #fff;border-radius:999px;background:linear-gradient(135deg,#8b5cf6 0%,#6d28d9 52%,#ec4899 100%);color:#fff;box-shadow:0 3px 10px #6d28d933}
+    .role-avatar svg{width:1.1rem;height:1.1rem;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
     @media(max-width:420px){#appView main>header{padding-left:.75rem;padding-right:.75rem}#pageTitle{max-width:40vw}#userLine{max-width:45vw}#mobileNav{padding-left:.5rem;padding-right:.5rem}#mobileNav .navbtn{padding:.62rem .62rem;font-size:.77rem}.btn{padding:.58rem .72rem}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
     th,td{padding:.7rem .65rem;border-bottom:1px solid #eef0f4;text-align:left;font-size:.85rem;white-space:nowrap}
@@ -114,7 +116,7 @@
     </aside>
     <main class="flex-1 min-w-0">
       <header class="bg-white border-b border-slate-200 px-4 md:px-7 py-4 flex justify-between items-center gap-2">
-        <div><div id="pageTitle" class="font-bold text-lg">Dashboard</div><div id="userLine" class="text-xs muted"></div></div>
+        <div><div id="pageTitle" class="font-bold text-lg">Dashboard</div><div class="mt-1 flex items-center gap-2"><span class="role-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 21v-1.7a4.3 4.3 0 0 0-4.3-4.3H8.3A4.3 4.3 0 0 0 4 19.3V21"/><circle cx="12" cy="7.5" r="4"/><path d="m17.5 5.2 1 .5 1.1-.4.8 1.3-.6 1 .1 1.2-1.4.5-.8-.6-1.2.1-.5-1.4.6-.8-.1-1.2Z"/></svg></span><div id="userLine" class="text-xs muted font-semibold"></div></div></div>
         <div class="flex items-center gap-2 shrink-0"><button type="button" class="btn primary hidden" data-install-app>Pasang</button><button id="logoutBtn" class="btn soft">Keluar</button></div>
       </header>
       <nav id="mobileNav" class="lg:hidden bg-white/95 backdrop-blur border-b border-slate-200 px-3 py-2 flex gap-2 overflow-x-auto shadow-sm">
@@ -134,9 +136,8 @@
       <div class="p-4 md:p-7 max-w-7xl mx-auto">
         <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
         <section id="page-dashboard" class="page">
-          <div class="mb-5"><h1 class="text-2xl font-bold">Dashboard Akademik</h1><p class="muted text-sm">Ringkasan data dari database cloud.</p></div>
+          <div class="mb-5"><h1 class="text-2xl font-bold">Selamat datang di ACADEMIA</h1><p class="muted text-sm">Kelola kegiatan akademik sekolah dengan lebih mudah dan terarah.</p></div>
           <div id="stats" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
-          <div class="card p-5 mt-5"><h2 class="font-bold mb-2">Status koneksi</h2><p id="connectionStatus" class="text-sm muted">Memeriksa...</p><p class="text-xs muted mt-2">Angka dashboard berasal dari data yang dapat diakses oleh akun aktif.</p></div>
         </section>
 
         <section id="page-students" class="page hidden">
@@ -383,7 +384,7 @@ async function startApp(user){
   if(error||!p){await db.auth.signOut();$('loginError').textContent='Profil pengguna tidak ditemukan: '+(error?.message||'');return;}
   if(!p.is_active){await db.auth.signOut();$('loginError').textContent='Akun dinonaktifkan.';return;}
   profile=p;
-  $('userLine').textContent=`${p.full_name||user.email} · ${p.role}`;
+  $('userLine').textContent=String(p.role||'pengguna').replace(/_/g,' ').replace(/\b[a-z]/g,letter=>letter.toUpperCase());
   $('loginView').classList.add('hidden');$('appView').classList.remove('hidden');
   await loadMasterData(); await loadStudents(); showPage('dashboard'); subscribeRealtime();
 }
@@ -942,7 +943,6 @@ async function loadDashboard(){
     db.from('attendance_sessions').select('id',{count:'exact',head:true})
   ]);
   $('stats').innerHTML=[['Siswa Aktif',s.count??'—'],['Kelas Aktif',c.count??'—'],['Entri Nilai',g.count??'—'],['Sesi Absensi',a.count??'—']].map(x=>`<div class="card p-5"><div class="text-sm muted">${x[0]}</div><div class="text-3xl font-extrabold mt-2">${x[1]}</div></div>`).join('');
-  $('connectionStatus').textContent='Terhubung sebagai '+profile.role+' · '+profile.email;
 }
 async function loadNotifications(){
   const {data,error}=await db.from('notifications').select('*').order('created_at',{ascending:false}).limit(50);
