@@ -138,6 +138,11 @@
         <section id="page-dashboard" class="page">
           <div class="mb-5"><h1 class="text-2xl font-bold">Selamat datang di ACADEMIA</h1><p class="muted text-sm">Kelola kegiatan akademik sekolah dengan lebih mudah dan terarah.</p></div>
           <div id="stats" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4"></div>
+          <div class="grid xl:grid-cols-3 gap-4 mt-5">
+            <section class="card p-5 xl:col-span-2"><div class="mb-4"><h2 class="font-bold">Aksi Cepat</h2><p class="muted text-sm">Buka pekerjaan yang sering digunakan.</p></div><div class="grid sm:grid-cols-2 gap-3"><button type="button" class="card p-4 text-left hover:border-violet-300" data-dashboard-action="add-student"><span class="text-xl">👥</span><span class="block font-semibold mt-2">Tambah Siswa</span><span class="muted text-xs">Buka formulir siswa baru</span></button><button type="button" class="card p-4 text-left hover:border-violet-300" data-dashboard-action="grades"><span class="text-xl">📝</span><span class="block font-semibold mt-2">Input Nilai</span><span class="muted text-xs">Kelola komponen dan nilai</span></button><button type="button" class="card p-4 text-left hover:border-violet-300" data-dashboard-action="attendance"><span class="text-xl">✅</span><span class="block font-semibold mt-2">Catat Absensi</span><span class="muted text-xs">Buka daftar kehadiran</span></button><button type="button" class="card p-4 text-left hover:border-violet-300" data-dashboard-action="reports"><span class="text-xl">📊</span><span class="block font-semibold mt-2">Buat Laporan</span><span class="muted text-xs">Lihat ringkasan akademik</span></button></div></section>
+            <section class="card p-5"><div class="mb-4"><h2 class="font-bold">Pantauan Hari Ini</h2><p class="muted text-sm">Sesi absensi yang tercatat untuk hari ini.</p></div><div class="rounded-xl bg-violet-50 p-4"><div class="text-sm muted">Sesi absensi tersimpan</div><div id="dashboardTodayAttendanceCount" class="text-3xl font-extrabold text-violet-800 mt-1">—</div><p id="dashboardTodayAttendanceNote" class="text-xs muted mt-2">Memuat data hari ini…</p></div><button type="button" class="btn soft mt-4 w-full" data-dashboard-action="attendance">Buka Absensi</button></section>
+          </div>
+          <section class="card p-5 mt-4"><div class="flex flex-wrap justify-between items-center gap-3 mb-3"><div><h2 class="font-bold">Aktivitas Terbaru</h2><p class="muted text-sm">Perubahan terkini di ACADEMIA.</p></div><button type="button" class="btn soft" data-dashboard-action="audit">Lihat Audit Trail</button></div><div id="dashboardActivityList" class="divide-y divide-slate-100"><p class="muted text-sm py-3">Memuat aktivitas…</p></div></section>
         </section>
 
         <section id="page-students" class="page hidden">
@@ -322,6 +327,11 @@ function showPage(page){
   if(page==='audit')loadAudit();
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+document.querySelectorAll('[data-dashboard-action]').forEach(button=>button.addEventListener('click',()=>{
+  const action=button.dataset.dashboardAction;
+  if(action==='add-student'){showPage('students');$('addStudentBtn').click();return;}
+  if(['grades','attendance','reports','audit'].includes(action))showPage(action);
+}));
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));
 function renderInteractiveTopics(){
   const list=$('interactiveTopicList'),isAdmin=profile?.role==='administrator';
@@ -968,13 +978,31 @@ $('saveAttendanceBtn').onclick=async()=>{
   alertBox('Absensi berhasil disimpan ke cloud.','success');
 };
 async function loadDashboard(){
-  const [s,c,g,a]=await Promise.all([
+  const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const [s,c,g,a,todayAttendance,recentActivity]=await Promise.all([
     db.from('students').select('id',{count:'exact',head:true}).eq('status','active'),
     db.from('classes').select('id',{count:'exact',head:true}).eq('is_active',true),
     db.from('grades').select('id',{count:'exact',head:true}),
-    db.from('attendance_sessions').select('id',{count:'exact',head:true})
+    db.from('attendance_sessions').select('id',{count:'exact',head:true}),
+    db.from('attendance_sessions').select('id',{count:'exact',head:true}).eq('meeting_date',today),
+    db.from('audit_logs').select('id,action,table_name,created_at').order('created_at',{ascending:false}).limit(5)
   ]);
   $('stats').innerHTML=[['Siswa Aktif',s.count??'—'],['Kelas Aktif',c.count??'—'],['Entri Nilai',g.count??'—'],['Sesi Absensi',a.count??'—']].map(x=>`<div class="card p-5"><div class="text-sm muted">${x[0]}</div><div class="text-3xl font-extrabold mt-2">${x[1]}</div></div>`).join('');
+  const addStudentAction=document.querySelector('[data-dashboard-action="add-student"]');
+  if(addStudentAction)addStudentAction.classList.toggle('hidden',profile?.role!=='administrator');
+  $('dashboardTodayAttendanceCount').textContent=todayAttendance.error?'—':String(todayAttendance.count??0);
+  $('dashboardTodayAttendanceNote').textContent=todayAttendance.error?'Data absensi hari ini belum dapat dimuat.':todayAttendance.count?`${todayAttendance.count} sesi telah tersimpan.`:'Belum ada sesi absensi yang tercatat hari ini.';
+  const activityList=$('dashboardActivityList');
+  if(recentActivity.error){activityList.innerHTML='<p class="muted text-sm py-3">Aktivitas terbaru belum dapat dimuat untuk akun ini.</p>';return;}
+  const tableNames={students:'Data Siswa',classes:'Kelas',grades:'Nilai',assessment_components:'Komponen Nilai',attendance_sessions:'Absensi',attendance_records:'Absensi',subjects:'Mata Pelajaran',interactive_topics:'Ruang Interaktif',grade_ledger:'Legger',profiles:'Akun'};
+  const activityRows=recentActivity.data||[];
+  activityList.innerHTML=activityRows.map(item=>{
+    const rawAction=String(item.action||'Aktivitas').toLowerCase();
+    const action=/insert|create|add|tambah/.test(rawAction)?'Data ditambahkan':/update|edit|ubah/.test(rawAction)?'Data diperbarui':/delete|remove|hapus|archive/.test(rawAction)?'Data dihapus atau diarsipkan':String(item.action||'Aktivitas');
+    const table=tableNames[item.table_name]||String(item.table_name||'Data');
+    const date=item.created_at?new Date(item.created_at).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'}):'';
+    return `<div class="flex items-start gap-3 py-3"><span class="mt-1.5 h-2.5 w-2.5 rounded-full bg-violet-500 shrink-0"></span><div class="min-w-0"><p class="text-sm font-semibold">${escapeHtml(action)} · ${escapeHtml(table)}</p><p class="muted text-xs mt-1">${escapeHtml(date)}</p></div></div>`;
+  }).join('')||'<p class="muted text-sm py-3">Belum ada aktivitas tercatat.</p>';
 }
 async function loadNotifications(){
   const {data,error}=await db.from('notifications').select('*').order('created_at',{ascending:false}).limit(50);
