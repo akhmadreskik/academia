@@ -310,6 +310,38 @@
 </dialog>
 
 <script>
+// Keep the mobile drawer independent from the main app script so it still opens
+// if a cloud SDK or another feature fails during startup.
+(() => {
+  const setSidebarOpen = open => {
+    const sidebar = document.getElementById('sidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const button = document.getElementById('openSidebarBtn');
+    if (!sidebar || !backdrop) return;
+    sidebar.classList.toggle('-translate-x-full', !open);
+    backdrop.classList.toggle('hidden', !open);
+    backdrop.setAttribute('aria-hidden', String(!open));
+    button?.setAttribute('aria-expanded', String(open));
+    document.body.classList.toggle('overflow-hidden', open);
+  };
+  window.setAcademiaSidebarOpen = setSidebarOpen;
+  document.addEventListener('click', event => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+    if (target.closest('#openSidebarBtn')) {
+      event.preventDefault();
+      setSidebarOpen(true);
+    } else if (target.closest('#closeSidebarBtn, #sidebarBackdrop')) {
+      setSidebarOpen(false);
+    }
+  }, true);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') setSidebarOpen(false);
+  });
+})();
+</script>
+
+<script>
 const SUPABASE_URL = "https://fdxzsszqwoturvkxmxas.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -397,18 +429,9 @@ document.addEventListener('click',event=>{
   event.preventDefault();
   showPage(page);
 },true);
-function openSidebar(){
-  $('sidebar').classList.remove('-translate-x-full');$('sidebarBackdrop').classList.remove('hidden');
-  $('sidebarBackdrop').setAttribute('aria-hidden','false');$('openSidebarBtn').setAttribute('aria-expanded','true');document.body.classList.add('overflow-hidden');
-}
 function closeSidebar(){
-  $('sidebar')?.classList.add('-translate-x-full');$('sidebarBackdrop')?.classList.add('hidden');
-  $('sidebarBackdrop')?.setAttribute('aria-hidden','true');$('openSidebarBtn')?.setAttribute('aria-expanded','false');document.body.classList.remove('overflow-hidden');
+  window.setAcademiaSidebarOpen?.(false);
 }
-$('openSidebarBtn').addEventListener('click',openSidebar);
-$('closeSidebarBtn').addEventListener('click',closeSidebar);
-$('sidebarBackdrop').addEventListener('click',closeSidebar);
-document.addEventListener('keydown',event=>{if(event.key==='Escape'&&$('sidebarBackdrop')&&!$('sidebarBackdrop').classList.contains('hidden'))closeSidebar();});
 document.querySelectorAll('[data-dashboard-action]').forEach(button=>button.addEventListener('click',()=>{
   const action=button.dataset.dashboardAction;
   if(action==='add-student'){showPage('students');$('addStudentBtn').click();return;}
