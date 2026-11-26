@@ -188,7 +188,7 @@
           <div id="interactiveTopicList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
           <div id="interactiveTopicDetail" class="hidden">
             <button id="interactiveBackBtn" type="button" class="btn soft mb-4">← Kembali ke daftar topik</button>
-            <div class="card p-5"><h2 id="interactiveTopicTitle" class="text-xl font-bold"></h2><p id="interactiveTopicDescription" class="muted text-sm mt-1"></p><a id="interactiveTopicDriveLink" class="btn primary inline-block mt-4 hidden" target="_blank" rel="noopener noreferrer">Buka Folder Materi</a><div id="interactiveMaterialList" class="mt-5 rounded-lg bg-slate-50 p-5 text-sm muted">Tautan materi untuk topik ini belum ditambahkan.</div></div>
+            <div class="card p-5"><div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="interactiveTopicTitle" class="text-xl font-bold"></h2><p id="interactiveTopicDescription" class="muted text-sm mt-1"></p></div><div id="interactiveTopicActions" class="hidden flex flex-wrap gap-2"><button id="editInteractiveTopicBtn" type="button" class="btn soft">✎ Edit Topik</button><button id="deleteInteractiveTopicBtn" type="button" class="btn danger">Hapus Topik</button></div></div><a id="interactiveTopicDriveLink" class="btn primary inline-block mt-4 hidden" target="_blank" rel="noopener noreferrer">Buka Folder Materi</a><div id="interactiveMaterialList" class="mt-5 rounded-lg bg-slate-50 p-5 text-sm muted">Tautan materi untuk topik ini belum ditambahkan.</div></div>
           </div>
         </section>
 
@@ -256,7 +256,7 @@ const SUPABASE_URL = "https://fdxzsszqwoturvkxmxas.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
-let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], gradeLedgerRows=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null, deferredInstallPrompt=null;
+let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], activeInteractiveTopicId=null, gradeLedgerRows=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null, deferredInstallPrompt=null;
 const installButtons=[...document.querySelectorAll('[data-install-app]')];
 const setInstallStatus=message=>{const status=$('installStatus');if(status)status.textContent=message;};
 const notifyInstallResult=(message,type='info')=>{setInstallStatus(message);if(!$('appView').classList.contains('hidden'))alertBox(message,type);};
@@ -325,34 +325,31 @@ document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));
 function renderInteractiveTopics(){
   const list=$('interactiveTopicList'),isAdmin=profile?.role==='administrator';
-  list.innerHTML=interactiveTopics.map(topic=>`<article class="card p-5 flex flex-col hover:border-violet-300 hover:shadow-md transition"><button type="button" class="text-left flex-1" data-topic-open="${escapeHtml(topic.id)}"><span class="text-2xl">📁</span><h2 class="font-bold mt-3">${escapeHtml(topic.name)}${topic.is_active===false?' · Nonaktif':''}</h2><p class="muted text-sm mt-1">${escapeHtml(topic.description||'Kumpulan tautan pembelajaran '+topic.name+'.')}</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>${isAdmin?`<div class="flex gap-2 border-t border-slate-100 pt-3 mt-4"><button type="button" class="btn soft" data-topic-edit="${escapeHtml(topic.id)}">Edit Topik</button><button type="button" class="btn danger" data-topic-delete="${escapeHtml(topic.id)}">Hapus Topik</button></div>`:''}</article>`).join('');
+  list.innerHTML=interactiveTopics.map(topic=>`<button type="button" class="card p-5 text-left hover:border-violet-300 hover:shadow-md transition" data-topic-open="${escapeHtml(topic.id)}"><span class="text-2xl">📁</span><h2 class="font-bold mt-3">${escapeHtml(topic.name)}${topic.is_active===false?' · Nonaktif':''}</h2><p class="muted text-sm mt-1">${escapeHtml(topic.description||'Kumpulan tautan pembelajaran '+topic.name+'.')}</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>`).join('');
   if(isAdmin)list.insertAdjacentHTML('beforeend','<button type="button" id="addTopicCardBtn" class="card p-5 border-dashed text-left hover:border-violet-300"><span class="text-2xl">＋</span><h2 class="font-bold mt-3">Tambah Topik</h2><p class="muted text-sm mt-1">Buat folder topik baru untuk materi pembelajaran.</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Tambah →</span></button>');
   $('addInteractiveTopicBtn').classList.toggle('hidden',!isAdmin);
   $('interactiveTopicError').classList.add('hidden');
 }
 async function loadInteractiveTopics(){
-  $('interactiveTopicDetail').classList.add('hidden');$('interactiveTopicList').classList.remove('hidden');
+  activeInteractiveTopicId=null;$('interactiveTopicDetail').classList.add('hidden');$('interactiveTopicList').classList.remove('hidden');
   const {data,error}=await db.from('interactive_topics').select('*').order('sort_order').order('name');
   if(error){interactiveTopics=[];renderInteractiveTopics();$('interactiveTopicError').textContent='Gagal memuat topik. Jalankan SQL terbaru di Supabase terlebih dahulu: '+error.message;$('interactiveTopicError').classList.remove('hidden');return;}
   interactiveTopics=data||[];renderInteractiveTopics();
 }
 function openInteractiveTopic(topic){
   if(!topic)return;
+  activeInteractiveTopicId=topic.id;
   $('interactiveTopicTitle').textContent=topic.name;
   $('interactiveTopicDescription').textContent=topic.description||'Kumpulan materi pembelajaran '+topic.name+'.';
   $('interactiveTopicDriveLink').href=topic.drive_url||'#';
   $('interactiveTopicDriveLink').classList.toggle('hidden',!topic.drive_url);
+  $('interactiveTopicActions').classList.toggle('hidden',profile?.role!=='administrator');
   $('interactiveMaterialList').textContent='Tautan materi untuk topik ini belum ditambahkan.';
   $('interactiveTopicList').classList.add('hidden');$('interactiveTopicDetail').classList.remove('hidden');
 }
 $('interactiveTopicList').addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button)return;
   if(button.id==='addTopicCardBtn')return openInteractiveTopicForm();
-  if(button.hasAttribute('data-topic-edit')){
-    if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengedit topik.','error');
-    return openInteractiveTopicForm(interactiveTopics.find(topic=>topic.id===button.dataset.topicEdit));
-  }
-  if(button.hasAttribute('data-topic-delete'))return deleteInteractiveTopic(button.dataset.topicDelete);
   if(button.hasAttribute('data-topic-open'))return openInteractiveTopic(interactiveTopics.find(topic=>topic.id===button.dataset.topicOpen));
 });
 function openInteractiveTopicForm(topic=null){
@@ -371,14 +368,20 @@ async function deleteInteractiveTopic(id){
   if(!data)return alertBox('Topik tidak terhapus. Periksa izin Administrator di Supabase.','error');
   await loadInteractiveTopics();alertBox(`Topik ${topic.name} berhasil dihapus dari ACADEMIA.`,'success');
 }
+$('editInteractiveTopicBtn').addEventListener('click',()=>{
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengedit topik.','error');
+  openInteractiveTopicForm(interactiveTopics.find(topic=>topic.id===activeInteractiveTopicId));
+});
+$('deleteInteractiveTopicBtn').addEventListener('click',()=>deleteInteractiveTopic(activeInteractiveTopicId));
 $('addInteractiveTopicBtn').onclick=()=>{
   if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menambah topik.','error');
   openInteractiveTopicForm();
 };
-$('interactiveBackBtn').addEventListener('click',()=>{$('interactiveTopicDetail').classList.add('hidden');$('interactiveTopicList').classList.remove('hidden');});
+$('interactiveBackBtn').addEventListener('click',()=>{activeInteractiveTopicId=null;$('interactiveTopicDetail').classList.add('hidden');$('interactiveTopicList').classList.remove('hidden');});
 $('interactiveTopicForm').addEventListener('submit',async event=>{
   event.preventDefault();if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengelola topik.','error');
   const id=$('interactiveTopicId').value;
+  const keepDetailOpen=Boolean(id&&activeInteractiveTopicId===id);
   const name=$('interactiveTopicName').value.trim(),description=$('interactiveTopicDescriptionInput').value.trim(),drive_url=$('interactiveTopicDriveUrlInput').value.trim()||null;
   if(!name)return alertBox('Nama topik wajib diisi.','error');
   if(drive_url){try{if(new URL(drive_url).protocol!=='https:')return alertBox('Link materi harus menggunakan https://.','error');}catch{return alertBox('Format link materi tidak valid.','error');}}
@@ -395,7 +398,7 @@ $('interactiveTopicForm').addEventListener('submit',async event=>{
     if(error)return alertBox('Gagal menambah topik: '+error.message,'error');
     if(!data)return alertBox('Topik tidak tersimpan. Periksa izin Administrator di Supabase.','error');
   }
-  $('interactiveTopicDialog').close();await loadInteractiveTopics();alertBox(id?`Topik ${name} berhasil diperbarui.`:`Topik ${name} berhasil ditambahkan.`,'success');
+  $('interactiveTopicDialog').close();await loadInteractiveTopics();if(keepDetailOpen)openInteractiveTopic(interactiveTopics.find(topic=>topic.id===id));alertBox(id?`Topik ${name} berhasil diperbarui.`:`Topik ${name} berhasil ditambahkan.`,'success');
 });
 $('loginForm').addEventListener('submit',async e=>{
   e.preventDefault(); $('loginError').textContent='';
