@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#1c2136">
+  <meta name="theme-color" content="#141829">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,261 +12,1643 @@
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <title>ACADEMIA — Academic Management System</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- External Libraries (CDN for standalone & cloud operation) -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
   <style>
-    :root{--navy:#1c2136;--navy-soft:#272d47;--violet:#6d4cc3;--violet-dark:#593aa8;--lav:#c4b5fd;--page:#f5f6fa;--line:#e5e7ef}
-    html{scroll-behavior:smooth}
-    body{min-height:100vh;min-height:100dvh;background:var(--page);color:#101828;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em}
-    button,a,input,select,textarea{transition:color .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease,opacity .18s ease}
-    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #a78bfa80;outline-offset:2px}
-    .btn{min-height:2.6rem;padding:.58rem .86rem;border-radius:.65rem;font-weight:600;font-size:.875rem;box-shadow:0 1px 2px #10182808;touch-action:manipulation}
-    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
-    .primary{background:var(--violet);color:white}.primary:hover{background:var(--violet-dark);box-shadow:0 3px 10px #6d4cc326}
-    .soft{background:#f1eef9;color:#57419b}.soft:hover{background:#eae5f5}.danger{background:#fef0f0;color:#a33434}.danger:hover{background:#fde4e4}
-    .field{width:100%;min-height:2.65rem;border:1px solid #e1e5ee;border-radius:.62rem;padding:.62rem .76rem;background:white;font-size:16px;touch-action:manipulation}
-    .field:focus{border-color:#9b7bea;box-shadow:0 0 0 3px #7955d91a;outline:none}
-    .card{background:white;border:1px solid var(--line);border-radius:.9rem;box-shadow:0 2px 12px #17203307;transition:border-color .18s ease,box-shadow .18s ease}
-    .card:hover{border-color:#dcd8e9;box-shadow:0 3px 14px #1720330a}
-    .muted{color:#64748b}
-    .sidebar{position:relative;z-index:35;background:var(--navy);box-shadow:none}
-    .brand-mark{display:grid;place-items:center;width:2.7rem;height:2.7rem;border:1px solid #ffffff1d;border-radius:.82rem;background:#ffffff0c;color:#fff;box-shadow:none}
-    .nav-section-label{padding:.8rem .72rem .32rem;color:#a8afc5;font-size:.64rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
-    .navbtn{position:relative;display:flex;align-items:center;gap:.68rem;width:100%;min-height:2.55rem;padding:.58rem .72rem;border:1px solid transparent;border-radius:.66rem;text-align:left;color:#d8dbe6;font-size:.875rem;font-weight:550;cursor:pointer;touch-action:manipulation}
-    .navbtn svg{width:1.13rem;height:1.13rem;flex:0 0 auto;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.86}
-    #sideNav .navbtn:hover{background:#ffffff0c;color:white;border-color:#ffffff0c}
-    #sideNav .navbtn.active{background:#ece8f8;color:#4f3c8b;border-color:transparent;font-weight:700;box-shadow:none}
-    #sideNav .navbtn.active svg{opacity:1}
-    #mobileNav{scrollbar-width:none;scroll-snap-type:x proximity}
-    #mobileNav::-webkit-scrollbar{display:none}
-    #mobileNav .navbtn{width:auto;flex:0 0 auto;scroll-snap-align:start;gap:.45rem;padding:.55rem .72rem;border-color:transparent;color:#526078;font-size:.82rem}
-    #mobileNav .navbtn:hover{background:#f1eef9;color:#57419b}
-    #mobileNav .navbtn.active{background:#ece8f8;color:#4f3c8b;border-color:#e2dcef;font-weight:700}
-    .page:not(.hidden){animation:page-enter .24s ease both}
-    @keyframes page-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-    tbody tr{transition:background-color .16s ease}tbody tr:hover{background:#faf9ff}
-    #appView main>header{position:sticky;top:0;z-index:30;min-height:4.25rem;padding-top:calc(.8rem + env(safe-area-inset-top));background:#fffffff5;backdrop-filter:blur(12px)}
-    #mobileNav{position:sticky;top:calc(4.25rem + env(safe-area-inset-top));z-index:35}
-    #appView main>div:last-child{padding-bottom:calc(1rem + env(safe-area-inset-bottom))}
-    #pageTitle{max-width:min(52vw,34rem);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    #userLine{max-width:58vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .role-avatar{display:grid;place-items:center;width:2.25rem;height:2.25rem;flex:0 0 auto;border:2px solid #fff;border-radius:999px;background:linear-gradient(145deg,#7659c9,#593aa8);color:#fff;box-shadow:0 2px 7px #6d4cc326}
-    .role-avatar svg{width:1.1rem;height:1.1rem;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
-    @media(max-width:420px){#appView main>header{padding-left:.75rem;padding-right:.75rem}#pageTitle{max-width:40vw}#userLine{max-width:45vw}#mobileNav{padding-left:.5rem;padding-right:.5rem}#mobileNav .navbtn{padding:.62rem .62rem;font-size:.77rem}.btn{padding:.58rem .72rem}}
-    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
-    th,td{padding:.7rem .65rem;border-bottom:1px solid #eef0f4;text-align:left;font-size:.85rem;white-space:nowrap}
-    th{color:#64748b;font-weight:700;background:#fafafa}
-    .pill{font-size:.72rem;padding:.2rem .5rem;border-radius:999px;background:#f1f5f9}
-    .dashboard-stat{display:flex;align-items:center;gap:.9rem;min-height:6.4rem;padding:1rem}
-    .dashboard-stat-icon{display:grid;place-items:center;width:2.8rem;height:2.8rem;flex:0 0 auto;border-radius:.75rem;background:#f2effa;color:var(--violet)}
-    .dashboard-stat-icon svg,.dashboard-action-icon svg,.dashboard-date-icon svg,.attendance-summary-icon svg{width:1.35rem;height:1.35rem;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;fill:none}
-    .dashboard-stat-value{font-size:1.65rem;line-height:1.15;font-weight:750;color:#151b2d;margin-top:.25rem}
-    .dashboard-action{display:flex;align-items:center;gap:.75rem;width:100%;min-height:3.8rem;padding:.75rem .85rem;border:1px solid var(--line);border-radius:.7rem;background:white;text-align:left;font-size:.875rem;font-weight:650;color:#252b3b}
-    .dashboard-action:hover{border-color:#d4c9ed;background:#fcfbfe}
-    .dashboard-action-icon{display:grid;place-items:center;width:2.25rem;height:2.25rem;flex:0 0 auto;border-radius:.65rem;background:#f2effa;color:var(--violet)}
-    .dashboard-date-icon,.attendance-summary-icon{display:grid;place-items:center;width:2.5rem;height:2.5rem;flex:0 0 auto;border-radius:.7rem;background:#f2effa;color:var(--violet)}
-    #dashboardActivityList>div{padding:.78rem 0}
-    @media(max-width:640px){.dashboard-stat{min-height:5.6rem;padding:.8rem;gap:.65rem}.dashboard-stat-icon{width:2.4rem;height:2.4rem}.dashboard-stat-value{font-size:1.4rem}.dashboard-action{min-height:3.35rem;padding:.65rem}.dashboard-welcome h1{font-size:1.45rem;line-height:1.25}}
-    /* Gunakan utility hidden milik Tailwind agar responsive classes seperti lg:flex dapat bekerja. */
-    dialog{border:0;border-radius:1rem;padding:0;max-width:38rem;width:calc(100% - 2rem);max-height:calc(100dvh - 1rem);overflow:auto;box-shadow:0 20px 70px #0f172a40}
-    dialog::backdrop{background:#10091c99}
+    :root {
+      --navy: #141829;
+      --navy-elevated: #1d2238;
+      --violet: #6d4cc3;
+      --violet-dark: #5b3bb0;
+      --violet-soft: #f3effc;
+      --lav: #c4b5fd;
+      --page: #f8fafc;
+      --line: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      background-color: var(--page);
+      color: var(--text-main);
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: -0.011em;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, .font-display {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Interactive Transitions */
+    button, a, input, select, textarea {
+      transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.16s ease, opacity 0.18s ease;
+    }
+
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 3px solid rgba(139, 92, 246, 0.35);
+      outline-offset: 2px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      min-height: 2.55rem;
+      padding: 0.55rem 0.95rem;
+      border-radius: 0.72rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+      line-height: 1.25;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: linear-gradient(180deg, #7553ce 0%, #6543bc 100%);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 2px 6px rgba(109, 76, 195, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+
+    .primary:hover:not(:disabled) {
+      background: linear-gradient(180deg, #6b49c4 0%, #5837ad 100%);
+      box-shadow: 0 4px 12px rgba(109, 76, 195, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .soft {
+      background: #ffffff;
+      color: #4c358c;
+      border: 1px solid #e2dff0;
+    }
+
+    .soft:hover:not(:disabled) {
+      background: #f5f2fc;
+      border-color: #d2c9ec;
+      color: #3f287c;
+    }
+
+    .danger {
+      background: #fff5f5;
+      color: #be123c;
+      border: 1px solid #fecdd3;
+    }
+
+    .danger:hover:not(:disabled) {
+      background: #ffe4e6;
+      border-color: #fda4af;
+    }
+
+    /* Form Fields */
+    .field {
+      width: 100%;
+      min-height: 2.65rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 0.72rem;
+      padding: 0.58rem 0.85rem;
+      background: #ffffff;
+      color: #0f172a;
+      font-size: 0.925rem;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+      touch-action: manipulation;
+    }
+
+    .field:hover {
+      border-color: #94a3b8;
+    }
+
+    .field:focus {
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3.5px rgba(124, 58, 237, 0.12);
+      outline: none;
+    }
+
+    /* Elevated Cards */
+    .card {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03), 0 4px 16px rgba(15, 23, 42, 0.025);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.045), 0 8px 24px rgba(15, 23, 42, 0.03);
+    }
+
+    .muted {
+      color: var(--text-muted);
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      background: radial-gradient(circle at 0% 0%, #232946 0%, #141829 58%, #101322 100%);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2.65rem;
+      height: 2.65rem;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 0.85rem;
+      background: linear-gradient(145deg, rgba(124, 58, 237, 0.35), rgba(255, 255, 255, 0.06));
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-section-label {
+      padding: 0.95rem 0.78rem 0.38rem;
+      color: #8b95b2;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .navbtn {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.72rem;
+      width: 100%;
+      min-height: 2.55rem;
+      padding: 0.56rem 0.82rem;
+      border: 1px solid transparent;
+      border-radius: 0.72rem;
+      text-align: left;
+      color: #cbd5e1;
+      font-size: 0.855rem;
+      font-weight: 500;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .navbtn svg {
+      width: 1.12rem;
+      height: 1.12rem;
+      flex: 0 0 auto;
+      stroke: currentColor;
+      stroke-width: 1.85;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0.82;
+    }
+
+    #sideNav {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    }
+
+    #sideNav .navbtn:hover {
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffffff;
+    }
+
+    #sideNav .navbtn.active {
+      background: linear-gradient(90deg, rgba(124, 58, 237, 0.28) 0%, rgba(124, 58, 237, 0.14) 100%);
+      color: #ffffff;
+      border-color: rgba(167, 139, 250, 0.28);
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    #sideNav .navbtn.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 22%;
+      bottom: 22%;
+      width: 3px;
+      border-radius: 0 4px 4px 0;
+      background: #a78bfa;
+    }
+
+    #sideNav .navbtn.active svg {
+      color: #c4b5fd;
+      opacity: 1;
+    }
+
+    /* Mobile Navigation */
+    #mobileNav {
+      scrollbar-width: none;
+      scroll-snap-type: x proximity;
+    }
+
+    #mobileNav::-webkit-scrollbar {
+      display: none;
+    }
+
+    #mobileNav .navbtn {
+      width: auto;
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      gap: 0.45rem;
+      padding: 0.5rem 0.78rem;
+      border-color: #e2e8f0;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    #mobileNav .navbtn:hover {
+      background: #f3effc;
+      color: #5b3bb0;
+      border-color: #ddd6fe;
+    }
+
+    #mobileNav .navbtn.active {
+      background: var(--violet);
+      color: #ffffff;
+      border-color: var(--violet);
+      box-shadow: 0 2px 8px rgba(109, 76, 195, 0.25);
+    }
+
+    /* Page Enter Animation */
+    .page:not(.hidden) {
+      animation: page-enter 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes page-enter {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Sticky Header & Safe Area */
+    #appView main > header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      min-height: 4.35rem;
+      padding-top: calc(0.85rem + env(safe-area-inset-top));
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    #mobileNav {
+      position: sticky;
+      top: calc(4.35rem + env(safe-area-inset-top));
+      z-index: 25;
+    }
+
+    #appView main > div:last-child {
+      padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+    }
+
+    #pageTitle {
+      max-width: min(55vw, 36rem);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #userLine {
+      max-width: 58vw;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .role-avatar {
+      display: grid;
+      place-items: center;
+      width: 1.75rem;
+      height: 1.75rem;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #7c3aed, #5b3bb0);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(109, 76, 195, 0.28);
+    }
+
+    .role-avatar svg {
+      width: 0.95rem;
+      height: 0.95rem;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* Tables */
+    th, td {
+      padding: 0.78rem 0.85rem;
+      border-bottom: 1px solid #f1f5f9;
+      text-align: left;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    th {
+      color: #475569;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    tbody tr {
+      transition: background-color 0.15s ease;
+    }
+
+    tbody tr:hover {
+      background: #f8f7ff;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    /* Status Pills */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.22rem 0.62rem;
+      border-radius: 999px;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Dashboard Cards */
+    .dashboard-stat {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      min-height: 6.6rem;
+      padding: 1.15rem;
+    }
+
+    .dashboard-stat-icon {
+      display: grid;
+      place-items: center;
+      width: 3rem;
+      height: 3rem;
+      flex: 0 0 auto;
+      border-radius: 0.85rem;
+      background: linear-gradient(135deg, #f3effc 0%, #e9e2fa 100%);
+      color: var(--violet);
+      border: 1px solid #e2d9f8;
+    }
+
+    .dashboard-stat-icon svg,
+    .dashboard-action-icon svg,
+    .dashboard-date-icon svg,
+    .attendance-summary-icon svg {
+      width: 1.35rem;
+      height: 1.35rem;
+      stroke: currentColor;
+      stroke-width: 1.85;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .dashboard-stat-value {
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.75rem;
+      line-height: 1.1;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 0.22rem;
+    }
+
+    .dashboard-action {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      width: 100%;
+      min-height: 3.9rem;
+      padding: 0.8rem 0.95rem;
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+      background: #ffffff;
+      text-align: left;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: #1e293b;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);
+    }
+
+    .dashboard-action:hover {
+      border-color: #c4b5fd;
+      background: #faf8ff;
+      color: #4c358c;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(109, 76, 195, 0.08);
+    }
+
+    .dashboard-action-icon {
+      display: grid;
+      place-items: center;
+      width: 2.35rem;
+      height: 2.35rem;
+      flex: 0 0 auto;
+      border-radius: 0.7rem;
+      background: #f3effc;
+      color: var(--violet);
+    }
+
+    .dashboard-date-icon,
+    .attendance-summary-icon {
+      display: grid;
+      place-items: center;
+      width: 2.4rem;
+      height: 2.4rem;
+      flex: 0 0 auto;
+      border-radius: 0.72rem;
+      background: #f3effc;
+      color: var(--violet);
+    }
+
+    #dashboardActivityList > div {
+      padding: 0.82rem 0;
+    }
+
+    /* Dialog Modals */
+    dialog {
+      border: 1px solid #e2e8f0;
+      border-radius: 1.15rem;
+      padding: 0;
+      max-width: 38rem;
+      width: calc(100% - 2rem);
+      max-height: calc(100dvh - 1.5rem);
+      overflow: auto;
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 24px 64px -12px rgba(15, 23, 42, 0.28);
+    }
+
+    dialog::backdrop {
+      background: rgba(15, 23, 42, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    /* Login Background Pattern */
+    .login-hero-bg {
+      background-color: #141829;
+      background-image:
+        radial-gradient(circle at 85% 15%, rgba(124, 58, 237, 0.28) 0%, transparent 45%),
+        radial-gradient(circle at 15% 85%, rgba(79, 70, 229, 0.22) 0%, transparent 50%),
+        linear-gradient(155deg, #141829 0%, #1e243d 100%);
+    }
+
+    @media (max-width: 640px) {
+      .dashboard-stat {
+        min-height: 5.75rem;
+        padding: 0.85rem;
+        gap: 0.7rem;
+      }
+      .dashboard-stat-icon {
+        width: 2.45rem;
+        height: 2.45rem;
+      }
+      .dashboard-stat-value {
+        font-size: 1.45rem;
+      }
+      .dashboard-action {
+        min-height: 3.45rem;
+        padding: 0.68rem;
+      }
+      .dashboard-welcome h1 {
+        font-size: 1.4rem;
+        line-height: 1.25;
+      }
+    }
+
+    @media (max-width: 420px) {
+      #appView main > header {
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+      }
+      #pageTitle {
+        max-width: 42vw;
+      }
+      #userLine {
+        max-width: 44vw;
+      }
+      #mobileNav {
+        padding-left: 0.65rem;
+        padding-right: 0.65rem;
+      }
+      .btn {
+        padding: 0.52rem 0.75rem;
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 </head>
 <body>
-<div id="loginView" class="min-h-screen grid md:grid-cols-2">
-  <section class="hidden md:flex flex-col justify-between p-12 text-white" style="background:linear-gradient(145deg,#1c2136,#303954)">
-    <div class="text-sm tracking-[.25em] font-bold">ACADEMIA</div>
-    <div><div class="text-4xl font-bold leading-tight">Academic Management<br> & Teacher Attendance</div><p class="text-violet-200 mt-4 max-w-md">Satu ruang kerja akademik terintegrasi untuk data siswa, nilai, kehadiran, dan pelaporan.</p></div>
-    <div class="text-xs text-violet-200">Cloud-powered academic workspace</div>
+
+<!-- ==================== LOGIN VIEW ==================== -->
+<div id="loginView" class="min-h-screen grid md:grid-cols-2 hidden">
+  <section class="login-hero-bg hidden md:flex flex-col justify-between p-12 text-white relative overflow-hidden">
+    <div class="flex items-center gap-3 relative z-10">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true">
+          <path d="m2.5 9 9.5-5 9.5 5-9.5 5-9.5-5Z"></path>
+          <path d="M6.5 11.2v5.3c3.4 2.5 7.6 2.5 11 0v-5.3M21.5 9v6"></path>
+        </svg>
+      </div>
+      <span class="text-sm tracking-[0.22em] font-extrabold font-display">ACADEMIA</span>
+    </div>
+
+    <div class="relative z-10 max-w-lg">
+      <span class="inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-200 mb-5">
+        <span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>
+        Sistem Manajemen Akademik Terpadu
+      </span>
+      <h1 class="text-4xl font-extrabold leading-tight tracking-tight">
+        Academic Management<br>&amp; Teacher Attendance
+      </h1>
+      <p class="text-slate-300 mt-4 text-base leading-relaxed">
+        Satu ruang kerja akademik terintegrasi untuk pengelolaan data siswa, komponen penilaian, absensi pertemuan, dan pelaporan berbasis cloud.
+      </p>
+
+      <div class="grid grid-cols-2 gap-3 mt-8 pt-8 border-t border-white/10">
+        <div>
+          <div class="text-sm font-bold text-white">Sinkronisasi Cloud</div>
+          <div class="text-xs text-slate-400 mt-0.5">Tersimpan otomatis ke Supabase</div>
+        </div>
+        <div>
+          <div class="text-sm font-bold text-white">Impor Excel &amp; OCR</div>
+          <div class="text-xs text-slate-400 mt-0.5">Input data siswa &amp; legger cepat</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-xs text-slate-400 relative z-10 flex items-center justify-between">
+      <span>Cloud-powered academic workspace</span>
+      <span>v2.0</span>
+    </div>
   </section>
-  <section class="flex items-center justify-center p-6">
-    <form id="loginForm" class="w-full max-w-md card p-8">
-      <div class="flex items-center justify-between gap-3"><div class="text-2xl font-extrabold" style="color:#432477">ACADEMIA</div><button type="button" class="btn soft hidden" data-install-app>Pasang Aplikasi</button></div><p class="muted text-sm mt-1 mb-7">Masuk ke akun sekolah Anda</p>
-      <label class="block text-sm font-semibold mb-1">Email</label><input id="loginEmail" class="field mb-4" type="email" autocomplete="username" required placeholder="nama@sekolah.sch.id">
-      <label class="block text-sm font-semibold mb-1">Password</label><input id="loginPassword" class="field mb-5" type="password" autocomplete="current-password" required placeholder="Password akun">
-      <button class="btn primary w-full" type="submit">SIGN IN</button>
-      <p id="loginError" class="text-sm text-red-600 mt-3"></p>
-      <p id="installStatus" class="text-xs muted mt-3" aria-live="polite">Di Android, buka menu Chrome ⋮ lalu pilih Instal aplikasi atau Tambahkan ke layar utama.</p>
-      <p class="text-xs muted mt-5">Akun dibuat oleh Administrator. Pendaftaran publik tidak tersedia.</p>
+
+  <section class="flex items-center justify-center p-6 bg-slate-50">
+    <form id="loginForm" class="w-full max-w-md card p-8 sm:p-9">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-violet-100 text-violet-700 grid place-items-center font-extrabold">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">
+              <path d="m2.5 9 9.5-5 9.5 5-9.5 5-9.5-5Z"></path>
+              <path d="M6.5 11.2v5.3c3.4 2.5 7.6 2.5 11 0v-5.3M21.5 9v6"></path>
+            </svg>
+          </div>
+          <div class="text-2xl font-extrabold font-display tracking-tight text-slate-900">ACADEMIA</div>
+        </div>
+        <button type="button" class="btn soft hidden" data-install-app="">Pasang Aplikasi</button>
+      </div>
+      <p class="muted text-sm mt-1.5 mb-7">Masuk ke akun sekolah Anda untuk melanjutkan</p>
+
+      <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" for="loginEmail">Email Sekolah</label>
+      <input id="loginEmail" class="field mb-4" type="email" autocomplete="username" required placeholder="nama@sekolah.sch.id" value="akhmad.reski.k@gmail.com">
+
+      <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" for="loginPassword">Password</label>
+      <input id="loginPassword" class="field mb-6" type="password" autocomplete="current-password" required placeholder="Masukkan password akun">
+
+      <button class="btn primary w-full py-2.5 text-sm tracking-wide" type="submit">SIGN IN</button>
+      <p id="loginError" class="text-sm text-rose-600 font-medium mt-3"></p>
+      <p id="installStatus" class="text-xs muted mt-3" aria-live="polite">Dukungan aplikasi belum aktif. Pastikan semua file PWA sudah diunggah ke situs HTTPS.</p>
+
+      <div class="mt-6 pt-5 border-t border-slate-100">
+        <p class="text-xs muted leading-relaxed">Akun dikelola dan dibuat oleh Administrator sekolah. Pendaftaran publik tidak tersedia.</p>
+      </div>
     </form>
   </section>
 </div>
 
-<div id="appView" class="hidden min-h-screen">
+<!-- ==================== MAIN APP SHELL ==================== -->
+<div id="appView" class="min-h-screen">
   <div class="flex min-h-screen">
-    <aside class="sidebar hidden lg:flex sticky top-0 self-start h-screen w-60 xl:w-64 flex-col p-4 text-white">
-      <div class="flex items-center gap-3 px-2 pt-3 pb-2"><div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6" aria-hidden="true"><path d="m2.5 9 9.5-5 9.5 5-9.5 5-9.5-5Z"/><path d="M6.5 11.2v5.3c3.4 2.5 7.6 2.5 11 0v-5.3M21.5 9v6"/></svg></div><div><div class="text-lg font-extrabold tracking-wide leading-tight">ACADEMIA</div><div class="text-[.65rem] text-slate-300 mt-1">Academic workspace</div></div></div>
-      <div class="h-px bg-white/10 mx-2 my-4"></div>
-      <nav id="sideNav" class="flex-1 overflow-y-auto pb-3">
+
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar hidden lg:flex sticky top-0 self-start h-screen w-64 xl:w-[16.5rem] flex-col p-4 text-white shrink-0">
+      <div class="flex items-center gap-3 px-2 pt-2 pb-1">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">
+            <path d="m2.5 9 9.5-5 9.5 5-9.5 5-9.5-5Z"></path>
+            <path d="M6.5 11.2v5.3c3.4 2.5 7.6 2.5 11 0v-5.3M21.5 9v6"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="text-base font-extrabold font-display tracking-wide leading-tight text-white">ACADEMIA</div>
+          <div class="text-[0.68rem] text-slate-400 font-medium mt-0.5">Academic Workspace</div>
+        </div>
+      </div>
+
+      <div class="h-px bg-white/10 mx-1 my-3.5"></div>
+
+      <nav id="sideNav" class="flex-1 overflow-y-auto pb-3 pr-0.5">
         <div class="nav-section-label">Akademik</div>
         <div class="space-y-1">
-        <button type="button" class="navbtn" data-page="dashboard" data-icon="dashboard" data-label="Dashboard"></button>
-        <button type="button" class="navbtn" data-page="students" data-icon="students" data-label="Data Siswa"></button>
-        <button type="button" class="navbtn" data-page="classes" data-icon="classes" data-label="Manajemen Kelas"></button>
-        <button type="button" class="navbtn" data-page="grades" data-icon="grades" data-label="Manajemen Nilai"></button>
-        <button type="button" class="navbtn" data-page="attendance" data-icon="attendance" data-label="Absensi"></button>
-        <button type="button" class="navbtn" data-page="reports" data-icon="reports" data-label="Laporan"></button>
+          <button class="navbtn active" data-page="dashboard" data-icon="dashboard" data-label="Dashboard"><span>Dashboard</span></button>
+          <button class="navbtn" data-page="students" data-icon="students" data-label="Data Siswa"><span>Data Siswa</span></button>
+          <button class="navbtn" data-page="classes" data-icon="classes" data-label="Manajemen Kelas"><span>Manajemen Kelas</span></button>
+          <button class="navbtn" data-page="grades" data-icon="grades" data-label="Manajemen Nilai"><span>Manajemen Nilai</span></button>
+          <button class="navbtn" data-page="attendance" data-icon="attendance" data-label="Absensi"><span>Absensi</span></button>
+          <button class="navbtn" data-page="reports" data-icon="reports" data-label="Laporan"><span>Laporan</span></button>
         </div>
+
         <div class="nav-section-label mt-2">Bahan Pembelajaran</div>
         <div class="space-y-1">
-          <button type="button" class="navbtn" data-page="soal-uh" data-icon="questions" data-label="Kumpulan Soal UH"></button>
-          <button type="button" class="navbtn" data-page="soal-osn" data-icon="medal" data-label="Soal OSN"></button>
-          <button type="button" class="navbtn" data-page="learning-docs" data-icon="book" data-label="Perangkat Pembelajaran"></button>
-          <button type="button" class="navbtn" data-page="interactive" data-icon="game" data-label="Ruang Interaktif"></button>
+          <button class="navbtn" data-page="soal-uh" data-icon="questions" data-label="Kumpulan Soal UH"><span>Kumpulan Soal UH</span></button>
+          <button class="navbtn" data-page="soal-osn" data-icon="medal" data-label="Soal OSN"><span>Soal OSN</span></button>
+          <button class="navbtn" data-page="learning-docs" data-icon="book" data-label="Perangkat Pembelajaran"><span>Perangkat Pembelajaran</span></button>
+          <button class="navbtn" data-page="interactive" data-icon="game" data-label="Ruang Interaktif"><span>Ruang Interaktif</span></button>
         </div>
+
         <div class="nav-section-label mt-2">Sistem</div>
         <div class="space-y-1">
-          <button type="button" class="navbtn" data-page="notifications" data-icon="bell" data-label="Notifikasi"></button>
-          <button type="button" class="navbtn" data-page="audit" data-icon="history" data-label="Audit Trail"></button>
+          <button class="navbtn" data-page="notifications" data-icon="bell" data-label="Notifikasi"><span>Notifikasi</span></button>
+          <button class="navbtn" data-page="audit" data-icon="history" data-label="Audit Trail"><span>Audit Trail</span></button>
         </div>
       </nav>
-      <div class="mt-3 mx-1 rounded-lg border border-white/10 bg-white/[.04] px-3 py-2.5"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-xs font-semibold text-white/90">Terhubung ke Cloud</span></div><div class="text-[.67rem] text-slate-300 mt-1.5 pl-4">Data tersinkron ke Supabase</div></div>
+
+      <!-- Cloud Status Card -->
+      <div class="mt-3 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-3">
+        <div class="flex items-center gap-2">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+          </span>
+          <span class="text-xs font-semibold text-white">Terhubung ke Cloud</span>
+        </div>
+        <div class="text-[0.68rem] text-slate-400 mt-1 pl-4">Data tersinkron ke Supabase</div>
+      </div>
     </aside>
-    <main class="flex-1 min-w-0">
-      <header class="bg-white border-b border-slate-200 px-4 md:px-7 py-4 flex justify-between items-center gap-2">
-        <div><div id="pageTitle" class="font-bold text-lg">Dashboard</div><div class="mt-1 flex items-center gap-2"><span class="role-avatar" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 21v-1.7a4.3 4.3 0 0 0-4.3-4.3H8.3A4.3 4.3 0 0 0 4 19.3V21"/><circle cx="12" cy="7.5" r="4"/><path d="m17.5 5.2 1 .5 1.1-.4.8 1.3-.6 1 .1 1.2-1.4.5-.8-.6-1.2.1-.5-1.4.6-.8-.1-1.2Z"/></svg></span><div id="userLine" class="text-xs muted font-semibold"></div></div></div>
-        <div class="flex items-center gap-2 shrink-0"><button type="button" class="btn primary hidden" data-install-app>Pasang</button><button id="logoutBtn" class="btn soft">Keluar</button></div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 min-w-0 flex flex-col">
+
+      <!-- Sticky Top Header -->
+      <header class="border-b border-slate-200/90 px-4 md:px-8 py-3.5 flex justify-between items-center gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="lg:hidden brand-mark !w-9 !h-9 !rounded-xl !bg-slate-900">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4" aria-hidden="true">
+              <path d="m2.5 9 9.5-5 9.5 5-9.5 5-9.5-5Z"></path>
+              <path d="M6.5 11.2v5.3c3.4 2.5 7.6 2.5 11 0v-5.3M21.5 9v6"></path>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div id="pageTitle" class="font-bold font-display text-lg md:text-xl text-slate-900 leading-tight">Dashboard</div>
+            <div class="hidden sm:block text-xs text-slate-400 mt-0.5">ACADEMIA · Sistem Informasi Akademik</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 shrink-0">
+          <div class="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50/90 py-1 pl-1.5 pr-3">
+            <span class="role-avatar" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M20 21v-1.7a4.3 4.3 0 0 0-4.3-4.3H8.3A4.3 4.3 0 0 0 4 19.3V21"></path>
+                <circle cx="12" cy="7.5" r="4"></circle>
+              </svg>
+            </span>
+            <span id="userLine" class="text-xs font-semibold text-slate-700">Administrator</span>
+          </div>
+          <button type="button" class="btn primary hidden" data-install-app="">Pasang</button>
+          <button id="logoutBtn" class="btn soft text-xs">Keluar</button>
+        </div>
       </header>
-      <nav id="mobileNav" class="lg:hidden bg-white/95 backdrop-blur border-b border-slate-200 px-3 py-2 flex gap-2 overflow-x-auto">
-        <button type="button" class="navbtn whitespace-nowrap" data-page="dashboard" data-icon="dashboard" data-label="Dashboard"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="students" data-icon="students" data-label="Siswa"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="classes" data-icon="classes" data-label="Kelas"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="grades" data-icon="grades" data-label="Nilai"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="attendance" data-icon="attendance" data-label="Absensi"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="reports" data-icon="reports" data-label="Laporan"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="soal-uh" data-icon="questions" data-label="Soal UH"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="soal-osn" data-icon="medal" data-label="Soal OSN"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="learning-docs" data-icon="book" data-label="Perangkat"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="interactive" data-icon="game" data-label="Interaktif"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="notifications" data-icon="bell" data-label="Notifikasi"></button>
-        <button type="button" class="navbtn whitespace-nowrap" data-page="audit" data-icon="history" data-label="Audit"></button>
+
+      <!-- Mobile Horizontal Pill Navigation -->
+      <nav id="mobileNav" class="lg:hidden bg-white/95 backdrop-blur border-b border-slate-200 px-3 py-2.5 flex gap-2 overflow-x-auto">
+        <button class="navbtn whitespace-nowrap active" data-page="dashboard" data-icon="dashboard" data-label="Dashboard"><span>Dashboard</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="students" data-icon="students" data-label="Siswa"><span>Siswa</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="classes" data-icon="classes" data-label="Kelas"><span>Kelas</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="grades" data-icon="grades" data-label="Nilai"><span>Nilai</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="attendance" data-icon="attendance" data-label="Absensi"><span>Absensi</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="reports" data-icon="reports" data-label="Laporan"><span>Laporan</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="soal-uh" data-icon="questions" data-label="Soal UH"><span>Soal UH</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="soal-osn" data-icon="medal" data-label="Soal OSN"><span>Soal OSN</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="learning-docs" data-icon="book" data-label="Perangkat"><span>Perangkat</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="interactive" data-icon="game" data-label="Interaktif"><span>Interaktif</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="notifications" data-icon="bell" data-label="Notifikasi"><span>Notifikasi</span></button>
+        <button class="navbtn whitespace-nowrap" data-page="audit" data-icon="history" data-label="Audit"><span>Audit</span></button>
       </nav>
-      <div class="p-4 md:p-7 max-w-7xl mx-auto">
-        <div id="alert" class="hidden mb-4 p-3 rounded-lg text-sm"></div>
+
+      <!-- Main Page Container -->
+      <div class="p-4 md:p-8 max-w-7xl w-full mx-auto">
+        <div id="alert" class="hidden mb-5 p-3.5 rounded-xl text-sm font-medium border"></div>
+
+        <!-- ==================== PAGE: DASHBOARD ==================== -->
         <section id="page-dashboard" class="page">
-          <div class="dashboard-welcome flex flex-wrap justify-between items-end gap-4 mb-5"><div><p class="text-xs font-bold uppercase tracking-[.12em] text-violet-700 mb-1">Ringkasan akademik</p><h1 class="text-2xl font-bold">Selamat datang di ACADEMIA</h1><p class="muted text-sm mt-1">Kelola kegiatan akademik sekolah dengan lebih mudah dan terarah.</p></div><div class="hidden sm:flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm muted"><span class="dashboard-date-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span><span id="dashboardTodayDate">Memuat tanggal…</span></div></div>
-          <div id="stats" class="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4"></div>
-          <div class="grid xl:grid-cols-2 gap-4 mt-4">
-            <section class="card p-4 md:p-5"><div class="flex items-start justify-between gap-3 mb-4"><div><h2 class="font-bold">Pantauan Hari Ini</h2><p class="muted text-sm mt-1">Sesi absensi yang sudah dicatat.</p></div><span class="attendance-summary-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M9 16l2 2 4-4"/></svg></span></div><div class="flex items-center gap-4 rounded-lg bg-slate-50 p-4"><div id="dashboardTodayAttendanceCount" class="text-4xl leading-none font-bold text-slate-900">—</div><div><div class="text-sm font-semibold">Sesi absensi tersimpan</div><p id="dashboardTodayAttendanceNote" class="muted text-xs mt-1">Memuat data hari ini…</p></div></div><button type="button" class="btn soft mt-4" data-dashboard-action="attendance">Buka Absensi <span aria-hidden="true">→</span></button></section>
-            <section class="card p-4 md:p-5"><div class="flex flex-wrap justify-between items-center gap-3 mb-2"><div><h2 class="font-bold">Aktivitas Terbaru</h2><p class="muted text-sm mt-1">Perubahan terkini di ACADEMIA.</p></div><button type="button" class="btn soft" data-dashboard-action="audit">Lihat Riwayat</button></div><div id="dashboardActivityList" class="divide-y divide-slate-100"><p class="muted text-sm py-3">Memuat aktivitas…</p></div></section>
+          <div class="dashboard-welcome flex flex-wrap justify-between items-end gap-4 mb-6">
+            <div>
+              <span class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.12em] text-violet-700 bg-violet-50 border border-violet-200/70 px-2.5 py-1 rounded-md mb-2">
+                Ringkasan Akademik
+              </span>
+              <h1 class="text-2xl md:text-[1.7rem] font-extrabold text-slate-900">Selamat datang di ACADEMIA</h1>
+              <p class="muted text-sm mt-1">Kelola kegiatan akademik, data siswa, penilaian, dan kehadiran dengan lebih terarah.</p>
+            </div>
+            <div class="hidden sm:flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-700 shadow-xs">
+              <span class="dashboard-date-icon">
+                <svg viewBox="0 0 24 24">
+                  <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                  <path d="M16 3v4M8 3v4M3 10h18"></path>
+                </svg>
+              </span>
+              <span id="dashboardTodayDate">Kamis, 26 November 2026</span>
+            </div>
           </div>
-          <section class="card p-4 mt-4"><div class="mb-3"><h2 class="font-bold">Akses Cepat</h2><p class="muted text-sm mt-1">Menu yang sering digunakan.</p></div><div class="grid grid-cols-2 xl:grid-cols-4 gap-2.5"><button type="button" class="dashboard-action" data-dashboard-action="add-student"><span class="dashboard-action-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M3 21v-2a6 6 0 0 1 12 0v2M19 8v6M16 11h6"/></svg></span>Tambah Siswa</button><button type="button" class="dashboard-action" data-dashboard-action="grades"><span class="dashboard-action-icon"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/><path d="m16 16 4-4 2 2-4 4-3 1Z"/></svg></span>Input Nilai</button><button type="button" class="dashboard-action" data-dashboard-action="attendance"><span class="dashboard-action-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M9 16l2 2 4-4"/></svg></span>Catat Absensi</button><button type="button" class="dashboard-action" data-dashboard-action="reports"><span class="dashboard-action-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8M8 11h8"/></svg></span>Buat Laporan</button></div></section>
+
+          <!-- 4 KPI Stats -->
+          <div id="stats" class="grid grid-cols-2 xl:grid-cols-4 gap-3.5 md:gap-4">
+            <div class="dashboard-stat card">
+              <span class="dashboard-stat-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="9" cy="8" r="4"></circle>
+                  <path d="M3 21v-2a6 6 0 0 1 12 0v2M19 8v6M16 11h6"></path>
+                </svg>
+              </span>
+              <div class="min-w-0">
+                <div class="text-xs md:text-sm font-medium muted">Siswa Aktif</div>
+                <div class="dashboard-stat-value">216</div>
+                <div class="text-[0.7rem] muted mt-1">Siswa terdaftar</div>
+              </div>
+            </div>
+            <div class="dashboard-stat card">
+              <span class="dashboard-stat-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+                  <path d="M8 22h8M12 18v4M7 8h4M7 12h10"></path>
+                </svg>
+              </span>
+              <div class="min-w-0">
+                <div class="text-xs md:text-sm font-medium muted">Kelas Aktif</div>
+                <div class="dashboard-stat-value">6</div>
+                <div class="text-[0.7rem] muted mt-1">Kelas berjalan</div>
+              </div>
+            </div>
+            <div class="dashboard-stat card">
+              <span class="dashboard-stat-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                  <path d="M14 2v6h6M8 13h8M8 17h5"></path>
+                </svg>
+              </span>
+              <div class="min-w-0">
+                <div class="text-xs md:text-sm font-medium muted">Entri Nilai</div>
+                <div class="dashboard-stat-value">9</div>
+                <div class="text-[0.7rem] muted mt-1">Nilai tersimpan</div>
+              </div>
+            </div>
+            <div class="dashboard-stat card">
+              <span class="dashboard-stat-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                  <path d="M16 3v4M8 3v4M3 10h18M9 16l2 2 4-4"></path>
+                </svg>
+              </span>
+              <div class="min-w-0">
+                <div class="text-xs md:text-sm font-medium muted">Sesi Absensi</div>
+                <div class="dashboard-stat-value">0</div>
+                <div class="text-[0.7rem] muted mt-1">Seluruh sesi</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pantauan & Aktivitas Grid -->
+          <div class="grid xl:grid-cols-2 gap-4 md:gap-5 mt-5">
+            <section class="card p-5 md:p-6 flex flex-col justify-between">
+              <div>
+                <div class="flex items-start justify-between gap-3 mb-4">
+                  <div>
+                    <h2 class="font-bold text-base text-slate-900">Pantauan Hari Ini</h2>
+                    <p class="muted text-sm mt-0.5">Sesi absensi yang sudah dicatat pada tanggal hari ini.</p>
+                  </div>
+                  <span class="attendance-summary-icon">
+                    <svg viewBox="0 0 24 24">
+                      <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                      <path d="M16 3v4M8 3v4M3 10h18M9 16l2 2 4-4"></path>
+                    </svg>
+                  </span>
+                </div>
+                <div class="flex items-center gap-4 rounded-xl border border-slate-200/80 bg-slate-50/80 p-4">
+                  <div id="dashboardTodayAttendanceCount" class="text-4xl leading-none font-extrabold font-display tabular-nums text-slate-900">0</div>
+                  <div>
+                    <div class="text-sm font-semibold text-slate-800">Sesi absensi tersimpan</div>
+                    <p id="dashboardTodayAttendanceNote" class="muted text-xs mt-1">Belum ada sesi absensi yang tercatat hari ini.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-5">
+                <button type="button" class="btn soft" data-dashboard-action="attendance">
+                  Buka Absensi <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            </section>
+
+            <section class="card p-5 md:p-6">
+              <div class="flex flex-wrap justify-between items-center gap-3 mb-3">
+                <div>
+                  <h2 class="font-bold text-base text-slate-900">Aktivitas Terbaru</h2>
+                  <p class="muted text-sm mt-0.5">Perubahan terkini di ruang kerja ACADEMIA.</p>
+                </div>
+                <button type="button" class="btn soft" data-dashboard-action="audit">Lihat Riwayat</button>
+              </div>
+              <div id="dashboardActivityList" class="divide-y divide-slate-100">
+                <div class="flex items-start gap-3 py-3">
+                  <span class="mt-1.5 h-2.5 w-2.5 rounded-full bg-violet-500 shrink-0 ring-4 ring-violet-50"></span>
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-800">Data dihapus atau diarsipkan · Absensi</p>
+                    <p class="muted text-xs mt-0.5">26 Nov 2026, 14.12</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3 py-3">
+                  <span class="mt-1.5 h-2.5 w-2.5 rounded-full bg-violet-500 shrink-0 ring-4 ring-violet-50"></span>
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-800">Data diperbarui · Data Siswa</p>
+                    <p class="muted text-xs mt-0.5">26 Nov 2026, 13.45</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-3 py-3">
+                  <span class="mt-1.5 h-2.5 w-2.5 rounded-full bg-violet-500 shrink-0 ring-4 ring-violet-50"></span>
+                  <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-800">Data ditambahkan · Nilai</p>
+                    <p class="muted text-xs mt-0.5">26 Nov 2026, 11.20</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- Akses Cepat -->
+          <section class="card p-5 md:p-6 mt-5">
+            <div class="mb-4">
+              <h2 class="font-bold text-base text-slate-900">Akses Cepat</h2>
+              <p class="muted text-sm mt-0.5">Pintasan ke modul operasional yang paling sering digunakan.</p>
+            </div>
+            <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+              <button type="button" class="dashboard-action" data-dashboard-action="add-student">
+                <span class="dashboard-action-icon">
+                  <svg viewBox="0 0 24 24">
+                    <circle cx="9" cy="8" r="4"></circle>
+                    <path d="M3 21v-2a6 6 0 0 1 12 0v2M19 8v6M16 11h6"></path>
+                  </svg>
+                </span>
+                <span>Tambah Siswa</span>
+              </button>
+              <button type="button" class="dashboard-action" data-dashboard-action="grades">
+                <span class="dashboard-action-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                    <path d="M14 2v6h6M8 13h8M8 17h5"></path>
+                    <path d="m16 16 4-4 2 2-4 4-3 1Z"></path>
+                  </svg>
+                </span>
+                <span>Input Nilai</span>
+              </button>
+              <button type="button" class="dashboard-action" data-dashboard-action="attendance">
+                <span class="dashboard-action-icon">
+                  <svg viewBox="0 0 24 24">
+                    <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                    <path d="M16 3v4M8 3v4M3 10h18M9 16l2 2 4-4"></path>
+                  </svg>
+                </span>
+                <span>Catat Absensi</span>
+              </button>
+              <button type="button" class="dashboard-action" data-dashboard-action="reports">
+                <span class="dashboard-action-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"></path>
+                    <path d="M8 7h8M8 11h8"></path>
+                  </svg>
+                </span>
+                <span>Buat Laporan</span>
+              </button>
+            </div>
+          </section>
         </section>
 
+        <!-- ==================== PAGE: STUDENTS ==================== -->
         <section id="page-students" class="page hidden">
-          <div class="flex flex-wrap justify-between gap-3 mb-4"><div><h1 class="text-2xl font-bold">Manajemen Siswa</h1><p class="muted text-sm">Tambah satu per satu atau impor banyak siswa dari Excel.</p></div><div class="flex flex-wrap gap-2"><button id="downloadStudentTemplateBtn" class="btn soft" type="button">Unduh Template Excel</button><button id="importStudentsBtn" class="btn soft" type="button">Impor Excel</button><input id="studentsCsvInput" class="hidden" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"><button id="scanRosterBtn" class="btn soft" type="button">📷 Baca Foto Absensi</button><button id="addStudentBtn" class="btn primary" type="button">＋ Tambah Siswa</button></div></div>
-          <p class="muted text-xs mb-1">Unduh template Excel. Isi satu baris untuk setiap siswa; NIS, Nama Lengkap, dan Kelas wajib. Kolom lainnya boleh kosong.</p>
-          <p class="muted text-xs mb-3">Template berisi lembar Petunjuk dan Data Siswa. Baris contoh bertanda NIS CONTOH otomatis dilewati. Nama kelas harus sama dengan kelas aktif.</p>
-          <p id="studentCsvStatus" class="hidden text-sm mb-3" aria-live="polite"></p>
-          <div class="card p-4">
-            <div class="grid md:grid-cols-3 gap-3 mb-4"><input id="studentSearch" class="field" placeholder="Cari nama / NIS / NISN"><select id="studentClassFilter" class="field"><option value="">Semua kelas</option></select><select id="studentStatusFilter" class="field"><option value="active">Siswa aktif</option><option value="archived">Diarsipkan</option><option value="">Semua status</option></select></div>
-            <div class="overflow-x-auto"><table class="w-full"><thead><tr><th>NIS</th><th>NISN</th><th>Nama</th><th>Kelas</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="studentsBody"></tbody></table></div>
+          <div class="flex flex-wrap justify-between items-start gap-4 mb-5">
+            <div>
+              <h1 class="text-2xl font-extrabold text-slate-900">Manajemen Siswa</h1>
+              <p class="muted text-sm mt-1">Tambah data siswa satu per satu, pindai foto absensi, atau impor massal dari Excel.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button id="downloadStudentTemplateBtn" class="btn soft" type="button">Unduh Template Excel</button>
+              <button id="importStudentsBtn" class="btn soft" type="button">Impor Excel</button>
+              <input id="studentsCsvInput" class="hidden" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv">
+              <button id="scanRosterBtn" class="btn soft" type="button">📷 Baca Foto Absensi</button>
+              <button id="addStudentBtn" class="btn primary" type="button">＋ Tambah Siswa</button>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200/80 bg-white px-4 py-3 mb-4 text-xs muted leading-relaxed">
+            <span class="font-semibold text-slate-700">Panduan Impor Excel:</span> Unduh template Excel terlebih dahulu. Isi satu baris per siswa; <strong class="text-slate-700">NIS</strong>, <strong class="text-slate-700">Nama Lengkap</strong>, dan <strong class="text-slate-700">Kelas</strong> wajib diisi. Baris contoh bertanda <code class="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700">NIS CONTOH</code> otomatis dilewati.
+          </div>
+
+          <p id="studentCsvStatus" class="hidden text-sm mb-3 font-medium" aria-live="polite"></p>
+
+          <div class="card p-4 md:p-5">
+            <div class="grid md:grid-cols-3 gap-3 mb-4">
+              <input id="studentSearch" class="field" placeholder="Cari nama, NIS, atau NISN...">
+              <select id="studentClassFilter" class="field">
+                <option value="" selected>Semua kelas</option>
+                <option value="20418383-a520-4b3f-8bcb-83f33fcc77d0">X-1</option>
+                <option value="641a1de3-c5a2-4fad-9149-5e6bc234bc0c">X-2</option>
+                <option value="257396a2-16dc-4bee-98b4-d49e0b7dd4fb">X-3</option>
+                <option value="35ae00fa-f2d8-4ae7-8bb3-64bd3709a3af">X-4</option>
+                <option value="5bc2e5d3-a690-40f5-8ffd-568865cd7521">XI-3</option>
+                <option value="6f5c19a0-56d1-4739-83f0-82c38ec4d86a">XI-5</option>
+              </select>
+              <select id="studentStatusFilter" class="field">
+                <option value="active" selected>Siswa aktif</option>
+                <option value="archived">Diarsipkan</option>
+                <option value="">Semua status</option>
+              </select>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+              <table class="w-full">
+                <thead>
+                  <tr>
+                    <th>NIS</th>
+                    <th>NISN</th>
+                    <th>Nama Lengkap</th>
+                    <th>Kelas</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsBody">
+                  <tr>
+                    <td class="tabular-nums text-slate-600">13595</td>
+                    <td class="text-slate-400">—</td>
+                    <td class="font-semibold text-slate-900">ABDUL QODIR</td>
+                    <td><span class="font-medium text-slate-700">XI-5</span></td>
+                    <td><span class="pill !bg-emerald-50 !text-emerald-700 !border-emerald-200">active</span></td>
+                    <td>
+                      <button type="button" class="text-violet-700 hover:text-violet-900 font-semibold mr-3" data-edit="413129ec-2cec-4d21-875e-8b5b820e3646">Edit</button>
+                      <button type="button" class="text-amber-700 hover:text-amber-900 mr-3" data-archive="413129ec-2cec-4d21-875e-8b5b820e3646">Arsip</button>
+                      <button type="button" class="text-rose-600 hover:text-rose-800 font-semibold" data-delete-student="413129ec-2cec-4d21-875e-8b5b820e3646">Hapus</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="tabular-nums text-slate-600">13846</td>
+                    <td class="text-slate-400">—</td>
+                    <td class="font-semibold text-slate-900">ABEL RAYHAN LOVANTO</td>
+                    <td><span class="font-medium text-slate-700">X-2</span></td>
+                    <td><span class="pill !bg-emerald-50 !text-emerald-700 !border-emerald-200">active</span></td>
+                    <td>
+                      <button type="button" class="text-violet-700 hover:text-violet-900 font-semibold mr-3" data-edit="8da080a5-fc78-44d8-8a12-a5b7dca14d60">Edit</button>
+                      <button type="button" class="text-amber-700 hover:text-amber-900 mr-3" data-archive="8da080a5-fc78-44d8-8a12-a5b7dca14d60">Arsip</button>
+                      <button type="button" class="text-rose-600 hover:text-rose-800 font-semibold" data-delete-student="8da080a5-fc78-44d8-8a12-a5b7dca14d60">Hapus</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="tabular-nums text-slate-600">13597</td>
+                    <td class="text-slate-400">—</td>
+                    <td class="font-semibold text-slate-900">ABYAN DWI NAUFAL SETIAWAN</td>
+                    <td><span class="font-medium text-slate-700">XI-5</span></td>
+                    <td><span class="pill !bg-emerald-50 !text-emerald-700 !border-emerald-200">active</span></td>
+                    <td>
+                      <button type="button" class="text-violet-700 hover:text-violet-900 font-semibold mr-3" data-edit="8fefb826-c38a-4ee2-84ef-4db0b1ca6f14">Edit</button>
+                      <button type="button" class="text-amber-700 hover:text-amber-900 mr-3" data-archive="8fefb826-c38a-4ee2-84ef-4db0b1ca6f14">Arsip</button>
+                      <button type="button" class="text-rose-600 hover:text-rose-800 font-semibold" data-delete-student="8fefb826-c38a-4ee2-84ef-4db0b1ca6f14">Hapus</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
+        <!-- ==================== PAGE: CLASSES ==================== -->
         <section id="page-classes" class="page hidden">
-          <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h1 class="text-2xl font-bold">Manajemen Kelas</h1><p class="muted text-sm">Tambah, ubah nama dan tahun ajaran, atur status, atau hapus kelas yang belum memiliki data terkait.</p></div><button id="addClassBtn" class="btn primary" type="button">＋ Tambah Kelas</button></div>
-          <div class="card p-4 overflow-x-auto"><table class="w-full"><thead><tr><th>Kelas</th><th>Tahun Ajaran</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="classesBody"></tbody></table></div>
-          <div class="card p-4 mt-4"><div class="flex flex-wrap justify-between items-center gap-3"><div><h2 class="font-bold">Mata Pelajaran</h2><p class="muted text-sm">Klik mapel untuk memilih, lalu gunakan Edit atau Hapus.</p></div><div class="flex flex-wrap gap-2"><button id="addSubjectBtn" class="btn primary" type="button">＋ Tambah Mapel</button><button id="editSubjectBtn" class="btn soft" type="button" disabled>Edit Mapel</button><button id="deleteSubjectBtn" class="btn danger" type="button" disabled>Hapus Mapel</button></div></div><div id="subjectsList" class="mt-3 flex flex-wrap gap-2"></div></div>
-        </section>
-
-        <section id="page-grades" class="page hidden">
-          <div class="mb-4"><h1 class="text-2xl font-bold">Manajemen Nilai</h1><p class="muted text-sm">Komponen penilaian dan nilai disimpan di Supabase.</p></div>
-          <div class="card p-4 mb-4 grid md:grid-cols-4 gap-3">
-            <select id="gradeClass" class="field"></select><select id="gradeSubject" class="field"></select><input id="gradeYear" class="field" placeholder="Tahun ajaran, contoh 2026/2027" value="2026/2027"><select id="gradeSemester" class="field"><option value="1">Semester 1</option><option value="2">Semester 2</option></select>
+          <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+            <div>
+              <h1 class="text-2xl font-extrabold text-slate-900">Manajemen Kelas</h1>
+              <p class="muted text-sm mt-1">Tambah, ubah nama dan tahun ajaran, atur status, atau hapus kelas yang belum memiliki data terkait.</p>
+            </div>
+            <button id="addClassBtn" class="btn primary" type="button">＋ Tambah Kelas</button>
           </div>
-          <div class="card p-4 mb-4"><h2 class="font-bold mb-3">Komponen penilaian</h2><div class="grid md:grid-cols-5 gap-2"><input id="componentName" class="field" placeholder="Nama komponen, contoh Tugas 1"><select id="componentCategory" class="field"><option value="tugas">Kategori: Tugas</option><option value="uh">Kategori: UH</option><option value="ujian_akhir">Kategori: Ujian Akhir</option></select><input id="componentWeight" class="field" type="number" min="0.01" max="100" step="0.01" placeholder="Bobot (%)"><button id="addComponentBtn" class="btn primary" type="button">Tambah komponen</button><button id="cancelComponentEditBtn" class="btn soft hidden" type="button">Batal edit</button></div><div id="componentEditorStatus" class="text-xs muted mt-2" aria-live="polite"></div><div id="componentsList" class="mt-3 text-sm"></div><p class="text-xs muted mt-2">Kelompokkan setiap komponen sebagai Tugas, UH, atau Ujian Akhir. Hapus akan menonaktifkan komponen; nilai lama tetap tersimpan di Supabase.</p></div>
-          <div class="card p-4 overflow-x-auto"><div class="flex justify-between items-center mb-3"><h2 class="font-bold">Input nilai tahun berjalan</h2><button id="loadGradesBtn" class="btn soft">Muat data</button></div><table class="w-full"><thead id="gradesHead"></thead><tbody id="gradesBody"></tbody></table><p class="text-xs muted mt-3">Nilai Asli menampilkan rata-rata kategori Tugas, UH, dan Ujian Akhir setelah ketiganya memiliki nilai. Nilai Akhir mengikuti bobot komponen yang sudah diatur.</p></div>
-          <div class="card p-4 mt-4 overflow-x-auto"><div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h2 class="font-bold">Legger Tahun Lalu</h2><p class="muted text-sm">Data historis sebagai acuan; tidak masuk ke perhitungan nilai tahun berjalan.</p><p class="muted text-xs mt-1">Isi satu baris per siswa, mapel, semester, dan tahun ajaran. Nilai 0–100; semester isi 1 atau 2. Baris contoh bertanda NIS CONTOH otomatis dilewati.</p></div><div class="flex flex-wrap gap-2"><button id="downloadLedgerTemplateBtn" class="btn soft" type="button">Unduh Template Excel</button><button id="importLedgerBtn" class="btn soft" type="button">Impor Excel</button><button id="addLedgerBtn" class="btn primary" type="button">＋ Tambah Legger</button><input id="ledgerCsvInput" class="hidden" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"></div></div><div class="grid sm:grid-cols-2 gap-3 mb-3"><input id="ledgerSearch" class="field" placeholder="Cari NIS, nama, kelas, atau mapel"><select id="ledgerYearFilter" class="field"><option value="">Semua tahun ajaran</option></select></div><table class="w-full"><thead><tr><th>Tahun Ajaran</th><th>Semester</th><th>NIS</th><th>Nama</th><th>Kelas</th><th>Mapel</th><th>Nilai Asli</th><th>Nilai Akhir</th><th>Catatan</th><th>Aksi</th></tr></thead><tbody id="ledgerBody"></tbody></table></div>
+
+          <div class="card p-4 md:p-5 overflow-x-auto">
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+              <table class="w-full">
+                <thead>
+                  <tr>
+                    <th>Kelas</th>
+                    <th>Tahun Ajaran</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="classesBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card p-5 md:p-6 mt-5">
+            <div class="flex flex-wrap justify-between items-center gap-3">
+              <div>
+                <h2 class="font-bold text-base text-slate-900">Mata Pelajaran</h2>
+                <p class="muted text-sm mt-0.5">Klik mata pelajaran untuk memilih, lalu gunakan tombol Edit atau Hapus.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button id="addSubjectBtn" class="btn primary" type="button">＋ Tambah Mapel</button>
+                <button id="editSubjectBtn" class="btn soft" type="button" disabled>Edit Mapel</button>
+                <button id="deleteSubjectBtn" class="btn danger" type="button" disabled>Hapus Mapel</button>
+              </div>
+            </div>
+            <div id="subjectsList" class="mt-4 flex flex-wrap gap-2"></div>
+          </div>
         </section>
 
+        <!-- ==================== PAGE: GRADES ==================== -->
+        <section id="page-grades" class="page hidden">
+          <div class="mb-5">
+            <h1 class="text-2xl font-extrabold text-slate-900">Manajemen Nilai</h1>
+            <p class="muted text-sm mt-1">Konfigurasi komponen penilaian, input nilai tahun berjalan, dan arsip legger tahun lalu.</p>
+          </div>
+
+          <div class="card p-4 md:p-5 mb-5 grid md:grid-cols-4 gap-3">
+            <select id="gradeClass" class="field">
+              <option value="20418383-a520-4b3f-8bcb-83f33fcc77d0" selected>X-1</option>
+              <option value="641a1de3-c5a2-4fad-9149-5e6bc234bc0c">X-2</option>
+              <option value="257396a2-16dc-4bee-98b4-d49e0b7dd4fb">X-3</option>
+              <option value="35ae00fa-f2d8-4ae7-8bb3-64bd3709a3af">X-4</option>
+              <option value="5bc2e5d3-a690-40f5-8ffd-568865cd7521">XI-3</option>
+              <option value="6f5c19a0-56d1-4739-83f0-82c38ec4d86a">XI-5</option>
+            </select>
+            <select id="gradeSubject" class="field">
+              <option value="4b23a559-7d9b-4ffb-bfb3-9006ad5c7559" selected>Informatika</option>
+              <option value="f9e642eb-0033-49bd-b1d1-87a94f515f64">Kimia</option>
+            </select>
+            <input id="gradeYear" class="field" placeholder="Tahun ajaran, contoh 2026/2027" value="2026/2027">
+            <select id="gradeSemester" class="field">
+              <option value="1" selected>Semester 1</option>
+              <option value="2">Semester 2</option>
+            </select>
+          </div>
+
+          <div class="card p-5 mb-5">
+            <h2 class="font-bold text-base text-slate-900 mb-3">Komponen Penilaian</h2>
+            <div class="grid md:grid-cols-5 gap-2.5">
+              <input id="componentName" class="field" placeholder="Nama komponen, contoh Tugas 1">
+              <select id="componentCategory" class="field">
+                <option value="tugas" selected>Kategori: Tugas</option>
+                <option value="uh">Kategori: UH</option>
+                <option value="ujian_akhir">Kategori: Ujian Akhir</option>
+              </select>
+              <input id="componentWeight" class="field" type="number" min="0.01" max="100" step="0.01" placeholder="Bobot (%)">
+              <button id="addComponentBtn" class="btn primary" type="button">Tambah komponen</button>
+              <button id="cancelComponentEditBtn" class="btn soft hidden" type="button">Batal edit</button>
+            </div>
+            <div id="componentEditorStatus" class="text-xs font-medium text-violet-700 mt-2" aria-live="polite"></div>
+            <div id="componentsList" class="mt-3 text-sm"></div>
+            <p class="text-xs muted mt-3">Kelompokkan setiap komponen sebagai Tugas, UH, atau Ujian Akhir. Menghapus akan menonaktifkan komponen sementara nilai lama tetap tersimpan aman di Supabase.</p>
+          </div>
+
+          <div class="card p-5 overflow-x-auto">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+              <h2 class="font-bold text-base text-slate-900">Input Nilai Tahun Berjalan</h2>
+              <button id="loadGradesBtn" class="btn soft" type="button">Muat data</button>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+              <table class="w-full">
+                <thead id="gradesHead"></thead>
+                <tbody id="gradesBody"></tbody>
+              </table>
+            </div>
+            <p class="text-xs muted mt-3">Nilai Asli menampilkan rata-rata kategori Tugas, UH, dan Ujian Akhir setelah ketiganya memiliki nilai. Nilai Akhir mengikuti bobot komponen yang sudah diatur.</p>
+          </div>
+
+          <div class="card p-5 mt-5 overflow-x-auto">
+            <div class="flex flex-wrap justify-between items-start gap-3 mb-4">
+              <div>
+                <h2 class="font-bold text-base text-slate-900">Legger Tahun Lalu</h2>
+                <p class="muted text-sm mt-0.5">Data historis sebagai acuan; tidak masuk ke perhitungan nilai tahun berjalan.</p>
+                <p class="muted text-xs mt-1">Isi satu baris per siswa, mapel, semester, dan tahun ajaran. Nilai 0–100; semester isi 1 atau 2. Baris contoh bertanda NIS CONTOH otomatis dilewati.</p>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button id="downloadLedgerTemplateBtn" class="btn soft" type="button">Unduh Template Excel</button>
+                <button id="importLedgerBtn" class="btn soft" type="button">Impor Excel</button>
+                <button id="addLedgerBtn" class="btn primary" type="button">＋ Tambah Legger</button>
+                <input id="ledgerCsvInput" class="hidden" type="file" accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv">
+              </div>
+            </div>
+            <div class="grid sm:grid-cols-2 gap-3 mb-4">
+              <input id="ledgerSearch" class="field" placeholder="Cari NIS, nama, kelas, atau mapel...">
+              <select id="ledgerYearFilter" class="field">
+                <option value="" selected>Semua tahun ajaran</option>
+              </select>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+              <table class="w-full">
+                <thead>
+                  <tr>
+                    <th>Tahun Ajaran</th>
+                    <th>Semester</th>
+                    <th>NIS</th>
+                    <th>Nama</th>
+                    <th>Kelas</th>
+                    <th>Mapel</th>
+                    <th>Nilai Asli</th>
+                    <th>Nilai Akhir</th>
+                    <th>Catatan</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="ledgerBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== PAGE: SOAL UH ==================== -->
         <section id="page-soal-uh" class="page hidden">
-          <div class="mb-4"><h1 class="text-2xl font-bold">Kumpulan Soal UH</h1><p class="muted text-sm">Koleksi soal Ulangan Harian dari Google Drive.</p></div>
-          <div class="card p-5"><h2 class="font-bold mb-2">Folder Google Drive</h2><p id="uhDriveStatus" class="muted text-sm">Folder soal UH sudah dihubungkan. Jika diminta, login ke akun Google yang diberi akses ke folder.</p><a id="uhDriveLink" class="btn primary inline-block mt-4" href="https://drive.google.com/drive/folders/1NlqbzQRojxS9ZF3aISSIB4l41b_vtCM4?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Kumpulan Soal UH</a></div>
+          <div class="mb-5">
+            <h1 class="text-2xl font-extrabold text-slate-900">Kumpulan Soal UH</h1>
+            <p class="muted text-sm mt-1">Koleksi arsip soal Ulangan Harian yang terhubung langsung ke Google Drive.</p>
+          </div>
+          <div class="card p-6">
+            <div class="flex items-start gap-4">
+              <div class="dashboard-stat-icon shrink-0">
+                <svg viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"></path>
+                  <path d="M14 2v6h6M8 13h8M8 17h8"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="font-bold text-base text-slate-900">Folder Google Drive · Soal UH</h2>
+                <p id="uhDriveStatus" class="muted text-sm mt-1 leading-relaxed">Folder soal UH sudah dihubungkan. Jika diminta, masuk ke akun Google sekolah yang diberi akses ke folder.</p>
+                <a id="uhDriveLink" class="btn primary inline-flex mt-4" href="https://drive.google.com/drive/folders/1NlqbzQRojxS9ZF3aISSIB4l41b_vtCM4?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Kumpulan Soal UH ↗</a>
+              </div>
+            </div>
+          </div>
         </section>
 
+        <!-- ==================== PAGE: SOAL OSN ==================== -->
         <section id="page-soal-osn" class="page hidden">
-          <div class="mb-4"><h1 class="text-2xl font-bold">Kumpulan Soal OSN</h1><p class="muted text-sm">Koleksi soal Olimpiade Sains Nasional dari Google Drive.</p></div>
-          <div class="card p-5"><h2 class="font-bold mb-2">Folder Google Drive</h2><p id="osnDriveStatus" class="muted text-sm">Folder soal OSN sudah dihubungkan. Jika diminta, login ke akun Google yang diberi akses ke folder.</p><a id="osnDriveLink" class="btn primary inline-block mt-4" href="https://drive.google.com/drive/folders/1gaZlJUfDmEdsAa79-nzk_PbCaJ3og3oS?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Kumpulan Soal OSN</a></div>
+          <div class="mb-5">
+            <h1 class="text-2xl font-extrabold text-slate-900">Kumpulan Soal OSN</h1>
+            <p class="muted text-sm mt-1">Koleksi soal pembinaan Olimpiade Sains Nasional dari Google Drive.</p>
+          </div>
+          <div class="card p-6">
+            <div class="flex items-start gap-4">
+              <div class="dashboard-stat-icon shrink-0">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="8" r="5"></circle>
+                  <path d="m8.5 12-1 9 4.5-2.5 4.5 2.5-1-9"></path>
+                  <path d="m10.4 8 1.1 1.1L13.8 7"></path>
+                </svg>
+              </div>
+              <div>
+                <h2 class="font-bold text-base text-slate-900">Folder Google Drive · Soal OSN</h2>
+                <p id="osnDriveStatus" class="muted text-sm mt-1 leading-relaxed">Folder soal OSN sudah dihubungkan. Jika diminta, login ke akun Google yang diberi akses ke folder.</p>
+                <a id="osnDriveLink" class="btn primary inline-flex mt-4" href="https://drive.google.com/drive/folders/1gaZlJUfDmEdsAa79-nzk_PbCaJ3og3oS?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Kumpulan Soal OSN ↗</a>
+              </div>
+            </div>
+          </div>
         </section>
 
+        <!-- ==================== PAGE: LEARNING DOCS ==================== -->
         <section id="page-learning-docs" class="page hidden">
-          <div class="mb-4"><h1 class="text-2xl font-bold">Perangkat Pembelajaran</h1><p class="muted text-sm">Buka folder Google Drive untuk memilih mapel dan perangkat yang ingin dibaca.</p></div>
-          <div class="card p-5"><div class="flex flex-wrap items-center justify-between gap-4"><div><h2 class="font-bold">Folder Perangkat Pembelajaran</h2><p class="muted text-sm mt-1">Di Google Drive, pilih folder mata pelajaran, lalu buka RPP/ATP atau dokumen lainnya. PDF dapat dibaca melalui pratinjau Google Drive.</p></div><a class="btn primary inline-block" href="https://drive.google.com/drive/folders/1j1_0jJ4M2optV-bTOm56djgsmHc-OFYH?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Folder Drive</a></div><div class="mt-4 rounded-lg bg-slate-50 p-4 text-sm muted">Folder ini memakai tautan Google Drive yang diberikan. Pastikan akun Google yang digunakan memiliki akses ke file.</div></div>
+          <div class="mb-5">
+            <h1 class="text-2xl font-extrabold text-slate-900">Perangkat Pembelajaran</h1>
+            <p class="muted text-sm mt-1">Buka folder Google Drive untuk memilih mata pelajaran dan perangkat ajar yang ingin dibaca.</p>
+          </div>
+          <div class="card p-6">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="max-w-2xl">
+                <h2 class="font-bold text-base text-slate-900">Folder Perangkat Pembelajaran</h2>
+                <p class="muted text-sm mt-1 leading-relaxed">Di Google Drive, pilih folder mata pelajaran, lalu buka RPP/ATP atau dokumen lainnya. Dokumen PDF dapat dibaca langsung melalui pratinjau Google Drive.</p>
+              </div>
+              <a class="btn primary" href="https://drive.google.com/drive/folders/1j1_0jJ4M2optV-bTOm56djgsmHc-OFYH?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Folder Drive ↗</a>
+            </div>
+            <div class="mt-5 rounded-xl border border-slate-200/80 bg-slate-50 p-4 text-xs sm:text-sm muted">
+              Folder ini memakai tautan Google Drive yang diberikan. Pastikan akun Google yang digunakan memiliki akses ke file.
+            </div>
+          </div>
         </section>
 
+        <!-- ==================== PAGE: INTERACTIVE ==================== -->
         <section id="page-interactive" class="page hidden">
-          <div class="flex flex-wrap justify-between items-center gap-3 mb-4"><div><h1 class="text-2xl font-bold">Ruang Interaktif</h1><p class="muted text-sm">Pilih topik untuk melihat kumpulan materi, video, kuis, dan games pembelajaran.</p></div><button id="addInteractiveTopicBtn" class="btn primary" type="button">＋ Tambah Topik</button></div>
-          <div id="interactiveTopicError" class="hidden mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700"></div>
+          <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+            <div>
+              <h1 class="text-2xl font-extrabold text-slate-900">Ruang Interaktif</h1>
+              <p class="muted text-sm mt-1">Pilih topik untuk melihat kumpulan materi, video, kuis, dan games pembelajaran.</p>
+            </div>
+            <button id="addInteractiveTopicBtn" class="btn primary" type="button">＋ Tambah Topik</button>
+          </div>
+          <div id="interactiveTopicError" class="hidden mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm text-rose-700"></div>
           <div id="interactiveTopicList" class="grid sm:grid-cols-2 xl:grid-cols-3 gap-4"></div>
           <div id="interactiveTopicDetail" class="hidden">
             <button id="interactiveBackBtn" type="button" class="btn soft mb-4">← Kembali ke daftar topik</button>
-            <div class="card p-5"><div class="flex flex-wrap items-start justify-between gap-3"><div><h2 id="interactiveTopicTitle" class="text-xl font-bold"></h2><p id="interactiveTopicDescription" class="muted text-sm mt-1"></p></div><div id="interactiveTopicActions" class="hidden flex flex-wrap gap-2"><button id="editInteractiveTopicBtn" type="button" class="btn soft">✎ Edit Topik</button><button id="deleteInteractiveTopicBtn" type="button" class="btn danger">Hapus Topik</button></div></div><a id="interactiveTopicDriveLink" class="btn primary inline-block mt-4 hidden" target="_blank" rel="noopener noreferrer">Buka Folder Materi</a><div id="interactiveMaterialList" class="mt-5 rounded-lg bg-slate-50 p-5 text-sm muted">Tautan materi untuk topik ini belum ditambahkan.</div></div>
+            <div class="card p-6">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h2 id="interactiveTopicTitle" class="text-xl font-extrabold text-slate-900"></h2>
+                  <p id="interactiveTopicDescription" class="muted text-sm mt-1"></p>
+                </div>
+                <div id="interactiveTopicActions" class="hidden flex flex-wrap gap-2">
+                  <button id="editInteractiveTopicBtn" type="button" class="btn soft">✎ Edit Topik</button>
+                  <button id="deleteInteractiveTopicBtn" type="button" class="btn danger">Hapus Topik</button>
+                </div>
+              </div>
+              <a id="interactiveTopicDriveLink" class="btn primary inline-flex mt-4 hidden" target="_blank" rel="noopener noreferrer">Buka Folder Materi ↗</a>
+              <div id="interactiveMaterialList" class="mt-5 rounded-xl border border-slate-200/80 bg-slate-50 p-5 text-sm muted">Tautan materi untuk topik ini belum ditambahkan.</div>
+            </div>
           </div>
         </section>
 
+        <!-- ==================== PAGE: ATTENDANCE ==================== -->
         <section id="page-attendance" class="page hidden">
-          <div class="mb-4"><h1 class="text-2xl font-bold">Absensi Pertemuan</h1><p class="muted text-sm">Pencatatan hadir, sakit, izin, dan alpa.</p></div>
-          <div class="card p-4 grid md:grid-cols-4 gap-3 mb-4"><select id="attendanceClass" class="field"></select><select id="attendanceSubject" class="field"></select><input id="attendanceDate" type="date" class="field"><input id="meetingNumber" type="number" min="1" value="1" class="field" placeholder="Pertemuan ke"></div>
-          <div class="card p-4"><div class="flex flex-wrap justify-between items-center gap-2 mb-3"><h2 class="font-bold">Daftar kehadiran</h2><div class="flex gap-2"><button id="cancelAttendanceEditBtn" class="btn soft hidden" type="button">Batal Edit</button><button id="saveAttendanceBtn" class="btn primary" type="button">Simpan Absensi</button></div></div><div class="overflow-x-auto"><table class="w-full"><thead><tr><th>NIS</th><th>Nama</th><th>Status kehadiran</th><th>Catatan</th></tr></thead><tbody id="attendanceBody"></tbody></table></div></div>
-          <div class="card p-4 mt-4"><div class="mb-3"><h2 class="font-bold">Riwayat Sesi Absensi</h2><p class="muted text-sm">Edit untuk memuat kembali sesi ke formulir, atau hapus satu sesi beserta data kehadirannya.</p></div><div class="overflow-x-auto"><table class="w-full"><thead><tr><th>Kelas</th><th>Mata Pelajaran</th><th>Tanggal</th><th>Pertemuan</th><th>Aksi</th></tr></thead><tbody id="attendanceSessionsBody"><tr><td colspan="5" class="muted">Memuat riwayat absensi…</td></tr></tbody></table></div></div>
+          <div class="mb-5">
+            <h1 class="text-2xl font-extrabold text-slate-900">Absensi Pertemuan</h1>
+            <p class="muted text-sm mt-1">Pencatatan status hadir, sakit, izin, dan alpa siswa per sesi pembelajaran.</p>
+          </div>
+
+          <div class="card p-4 md:p-5 grid md:grid-cols-4 gap-3 mb-5">
+            <select id="attendanceClass" class="field">
+              <option value="20418383-a520-4b3f-8bcb-83f33fcc77d0" selected>X-1</option>
+              <option value="641a1de3-c5a2-4fad-9149-5e6bc234bc0c">X-2</option>
+              <option value="257396a2-16dc-4bee-98b4-d49e0b7dd4fb">X-3</option>
+              <option value="35ae00fa-f2d8-4ae7-8bb3-64bd3709a3af">X-4</option>
+              <option value="5bc2e5d3-a690-40f5-8ffd-568865cd7521">XI-3</option>
+              <option value="6f5c19a0-56d1-4739-83f0-82c38ec4d86a">XI-5</option>
+            </select>
+            <select id="attendanceSubject" class="field">
+              <option value="4b23a559-7d9b-4ffb-bfb3-9006ad5c7559" selected>Informatika</option>
+              <option value="f9e642eb-0033-49bd-b1d1-87a94f515f64">Kimia</option>
+            </select>
+            <input id="attendanceDate" type="date" class="field" value="2026-11-26">
+            <input id="meetingNumber" type="number" min="1" value="1" class="field" placeholder="Pertemuan ke">
+          </div>
+
+          <div class="card p-5">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+              <h2 class="font-bold text-base text-slate-900">Daftar Kehadiran Siswa</h2>
+              <div class="flex gap-2">
+                <button id="cancelAttendanceEditBtn" class="btn soft hidden" type="button">Batal Edit</button>
+                <button id="saveAttendanceBtn" class="btn primary" type="button">Simpan Absensi</button>
+              </div>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+              <table class="w-full">
+                <thead>
+                  <tr>
+                    <th>NIS</th>
+                    <th>Nama Lengkap</th>
+                    <th>Status Kehadiran</th>
+                    <th>Catatan</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card p-5 mt-5">
+            <div class="mb-4">
+              <h2 class="font-bold text-base text-slate-900">Riwayat Sesi Absensi</h2>
+              <p class="muted text-sm mt-0.5">Klik Edit untuk memuat kembali sesi ke formulir, atau Hapus untuk menghapus satu sesi beserta catatan kehadirannya.</p>
+            </div>
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+              <table class="w-full">
+                <thead>
+                  <tr>
+                    <th>Kelas</th>
+                    <th>Mata Pelajaran</th>
+                    <th>Tanggal</th>
+                    <th>Pertemuan</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="attendanceSessionsBody">
+                  <tr><td colspan="5" class="muted">Memuat riwayat absensi…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
+        <!-- ==================== PAGE: REPORTS ==================== -->
         <section id="page-reports" class="page hidden">
-          <div class="mb-4"><h1 class="text-2xl font-bold">Laporan Akademik</h1><p class="muted text-sm">Ringkasan nilai dan kehadiran berdasarkan data cloud.</p></div>
-          <div class="card p-4 flex flex-wrap gap-3"><select id="reportClass" class="field max-w-xs"></select><select id="reportSubject" class="field max-w-xs"></select><button id="generateReportBtn" class="btn primary">Buat Laporan</button><button id="printReportBtn" class="btn soft">Cetak / PDF</button><button id="exportReportBtn" class="btn soft">Ekspor CSV</button></div>
-          <div id="reportResult" class="card p-4 mt-4 overflow-x-auto">Pilih kelas dan mata pelajaran, lalu buat laporan.</div>
+          <div class="mb-5">
+            <h1 class="text-2xl font-extrabold text-slate-900">Laporan Akademik</h1>
+            <p class="muted text-sm mt-1">Ringkasan nilai dan kehadiran berdasarkan data tersimpan di cloud.</p>
+          </div>
+          <div class="card p-4 md:p-5 flex flex-wrap gap-3">
+            <select id="reportClass" class="field max-w-xs">
+              <option value="20418383-a520-4b3f-8bcb-83f33fcc77d0" selected>X-1</option>
+              <option value="641a1de3-c5a2-4fad-9149-5e6bc234bc0c">X-2</option>
+              <option value="257396a2-16dc-4bee-98b4-d49e0b7dd4fb">X-3</option>
+              <option value="35ae00fa-f2d8-4ae7-8bb3-64bd3709a3af">X-4</option>
+              <option value="5bc2e5d3-a690-40f5-8ffd-568865cd7521">XI-3</option>
+              <option value="6f5c19a0-56d1-4739-83f0-82c38ec4d86a">XI-5</option>
+            </select>
+            <select id="reportSubject" class="field max-w-xs">
+              <option value="4b23a559-7d9b-4ffb-bfb3-9006ad5c7559" selected>Informatika</option>
+              <option value="f9e642eb-0033-49bd-b1d1-87a94f515f64">Kimia</option>
+            </select>
+            <button id="generateReportBtn" class="btn primary" type="button">Buat Laporan</button>
+            <button id="printReportBtn" class="btn soft" type="button">Cetak / PDF</button>
+            <button id="exportReportBtn" class="btn soft" type="button">Ekspor CSV</button>
+          </div>
+          <div id="reportResult" class="card p-5 mt-5 overflow-x-auto text-sm muted">Pilih kelas dan mata pelajaran, lalu klik Buat Laporan.</div>
         </section>
 
-        <section id="page-notifications" class="page hidden"><h1 class="text-2xl font-bold mb-4">Notifikasi</h1><div id="notificationsList" class="card p-4 text-sm">Belum ada notifikasi.</div></section>
-        <section id="page-audit" class="page hidden"><div class="flex flex-wrap justify-between items-start gap-3 mb-4"><div><h1 class="text-2xl font-bold">Audit Trail</h1><p class="muted text-sm">Menampilkan maksimal 100 catatan terbaru.</p></div><button id="clearAuditBtn" class="btn danger hidden" type="button">Bersihkan Audit Trail</button></div><div class="card p-4 overflow-x-auto"><table class="w-full"><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Tabel</th><th>ID Record</th></tr></thead><tbody id="auditBody"></tbody></table></div></section>
+        <!-- ==================== PAGE: NOTIFICATIONS ==================== -->
+        <section id="page-notifications" class="page hidden">
+          <div class="mb-5">
+            <h1 class="text-2xl font-extrabold text-slate-900">Notifikasi</h1>
+            <p class="muted text-sm mt-1">Pemberitahuan sistem dan pembaruan aktivitas akademik.</p>
+          </div>
+          <div id="notificationsList" class="card p-5 text-sm muted">Belum ada notifikasi.</div>
+        </section>
+
+        <!-- ==================== PAGE: AUDIT TRAIL ==================== -->
+        <section id="page-audit" class="page hidden">
+          <div class="flex flex-wrap justify-between items-start gap-3 mb-5">
+            <div>
+              <h1 class="text-2xl font-extrabold text-slate-900">Audit Trail</h1>
+              <p class="muted text-sm mt-1">Menampilkan maksimal 100 catatan perubahan data terbaru di sistem.</p>
+            </div>
+            <button id="clearAuditBtn" class="btn danger hidden" type="button">Bersihkan Audit Trail</button>
+          </div>
+          <div class="card p-4 md:p-5 overflow-x-auto">
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80">
+              <table class="w-full">
+                <thead>
+                  <tr>
+                    <th>Waktu</th>
+                    <th>Pengguna</th>
+                    <th>Aksi</th>
+                    <th>Tabel</th>
+                    <th>ID Record</th>
+                  </tr>
+                </thead>
+                <tbody id="auditBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </div>
     </main>
   </div>
 </div>
 
+<!-- ==================== MODALS / DIALOGS ==================== -->
+
+<!-- Student Dialog -->
 <dialog id="studentDialog">
   <form id="studentForm" class="p-6">
-    <div class="flex justify-between items-center mb-4"><h2 id="studentDialogTitle" class="font-bold text-lg">Tambah Siswa</h2><button type="button" class="text-xl" data-close="studentDialog">×</button></div>
-    <input id="studentId" type="hidden">
-    <div class="grid md:grid-cols-2 gap-3">
-      <label class="text-sm">NIS *<input id="fNis" class="field mt-1" required></label>
-      <label class="text-sm">NISN<input id="fNisn" class="field mt-1"></label>
-      <label class="text-sm md:col-span-2">Nama lengkap *<input id="fName" class="field mt-1" required></label>
-      <label class="text-sm">Kelas *<select id="fClass" class="field mt-1" required></select></label>
-      <label class="text-sm">Jenis kelamin<select id="fGender" class="field mt-1"><option value="">Pilih</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></label>
-      <label class="text-sm">Tanggal lahir<input id="fBirth" type="date" class="field mt-1"></label>
-      <label class="text-sm">Kontak<input id="fPhone" class="field mt-1"></label>
+    <div class="flex justify-between items-center pb-3 mb-4 border-b border-slate-100">
+      <h2 id="studentDialogTitle" class="font-bold text-lg text-slate-900">Tambah Siswa</h2>
+      <button type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 grid place-items-center text-slate-500 text-xl" data-close="studentDialog">×</button>
     </div>
-    <div class="flex justify-end gap-2 mt-6"><button type="button" class="btn soft" data-close="studentDialog">Batal</button><button class="btn primary" type="submit">Simpan ke Cloud</button></div>
+    <input id="studentId" type="hidden">
+    <div class="grid md:grid-cols-2 gap-3.5">
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">NIS *<input id="fNis" class="field mt-1 font-normal normal-case" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">NISN<input id="fNisn" class="field mt-1 font-normal normal-case"></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600 md:col-span-2">Nama lengkap *<input id="fName" class="field mt-1 font-normal normal-case" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Kelas *
+        <select id="fClass" class="field mt-1 font-normal normal-case" required>
+          <option value="20418383-a520-4b3f-8bcb-83f33fcc77d0" selected>X-1</option>
+          <option value="641a1de3-c5a2-4fad-9149-5e6bc234bc0c">X-2</option>
+          <option value="257396a2-16dc-4bee-98b4-d49e0b7dd4fb">X-3</option>
+          <option value="35ae00fa-f2d8-4ae7-8bb3-64bd3709a3af">X-4</option>
+          <option value="5bc2e5d3-a690-40f5-8ffd-568865cd7521">XI-3</option>
+          <option value="6f5c19a0-56d1-4739-83f0-82c38ec4d86a">XI-5</option>
+        </select>
+      </label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Jenis kelamin
+        <select id="fGender" class="field mt-1 font-normal normal-case">
+          <option value="" selected>Pilih</option>
+          <option value="L">Laki-laki</option>
+          <option value="P">Perempuan</option>
+        </select>
+      </label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Tanggal lahir<input id="fBirth" type="date" class="field mt-1 font-normal normal-case"></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Kontak<input id="fPhone" class="field mt-1 font-normal normal-case"></label>
+    </div>
+    <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+      <button type="button" class="btn soft" data-close="studentDialog">Batal</button>
+      <button class="btn primary" type="submit">Simpan ke Cloud</button>
+    </div>
   </form>
 </dialog>
-<dialog id="classDialog"><form id="classForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="classDialogTitle" class="font-bold">Tambah Kelas</h2><button type="button" class="text-xl" data-close="classDialog">×</button></div><input id="classId" type="hidden"><label class="text-sm">Nama kelas<input id="newClassName" class="field mt-1" placeholder="Contoh XI-7" required></label><label class="text-sm block mt-3">Tahun ajaran<input id="newClassYear" class="field mt-1" placeholder="Contoh 2026/2027 atau 2026"></label><div class="flex justify-end mt-5"><button id="saveClassBtn" type="submit" class="btn primary">Simpan Kelas</button></div></form></dialog>
-<dialog id="subjectDialog"><form id="subjectForm" class="p-6"><div class="flex justify-between mb-4"><h2 id="subjectDialogTitle" class="font-bold">Tambah Mata Pelajaran</h2><button type="button" class="text-xl" data-close="subjectDialog">×</button></div><input id="subjectId" type="hidden"><label class="text-sm">Nama mata pelajaran<input id="newSubjectName" class="field mt-1" placeholder="Contoh Matematika" maxlength="120" required></label><label id="subjectStatusField" class="text-sm block mt-3 hidden">Status<select id="subjectActive" class="field mt-1"><option value="true">Aktif</option><option value="false">Nonaktif</option></select></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="subjectDialog">Batal</button><button id="subjectSubmitBtn" type="submit" class="btn primary">Simpan Mapel</button></div></form></dialog>
 
-<dialog id="interactiveTopicDialog"><form id="interactiveTopicForm" class="p-6"><div class="flex justify-between items-center mb-4"><h2 id="interactiveTopicDialogTitle" class="font-bold text-lg">Tambah Topik</h2><button type="button" class="text-xl" data-close="interactiveTopicDialog">×</button></div><input id="interactiveTopicId" type="hidden"><label class="block text-sm font-semibold mb-3">Nama topik *<input id="interactiveTopicName" class="field mt-1" maxlength="120" placeholder="Contoh Stoikiometri" required></label><label class="block text-sm font-semibold mb-3">Deskripsi<input id="interactiveTopicDescriptionInput" class="field mt-1" maxlength="250" placeholder="Kumpulan materi pembelajaran"></label><label class="block text-sm font-semibold">Link folder materi (opsional)<input id="interactiveTopicDriveUrlInput" class="field mt-1" type="url" placeholder="https://drive.google.com/..."><span class="muted text-xs">Link bisa ditambahkan sekarang atau nanti.</span></label><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="interactiveTopicDialog">Batal</button><button id="saveInteractiveTopicBtn" type="submit" class="btn primary">Simpan Topik</button></div></form></dialog>
+<!-- Class Dialog -->
+<dialog id="classDialog">
+  <form id="classForm" class="p-6">
+    <div class="flex justify-between items-center pb-3 mb-4 border-b border-slate-100">
+      <h2 id="classDialogTitle" class="font-bold text-lg text-slate-900">Tambah Kelas</h2>
+      <button type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 grid place-items-center text-slate-500 text-xl" data-close="classDialog">×</button>
+    </div>
+    <input id="classId" type="hidden">
+    <label class="text-xs font-bold uppercase tracking-wider text-slate-600 block">Nama kelas
+      <input id="newClassName" class="field mt-1 font-normal normal-case" placeholder="Contoh XI-7" required>
+    </label>
+    <label class="text-xs font-bold uppercase tracking-wider text-slate-600 block mt-3.5">Tahun ajaran
+      <input id="newClassYear" class="field mt-1 font-normal normal-case" placeholder="Contoh 2026/2027 atau 2026">
+    </label>
+    <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+      <button type="button" class="btn soft" data-close="classDialog">Batal</button>
+      <button id="saveClassBtn" type="submit" class="btn primary">Simpan Kelas</button>
+    </div>
+  </form>
+</dialog>
 
-<dialog id="gradeLedgerDialog"><form id="gradeLedgerForm" class="p-6"><div class="flex justify-between items-center mb-4"><h2 id="gradeLedgerDialogTitle" class="font-bold text-lg">Tambah Legger Tahun Lalu</h2><button type="button" class="text-xl" data-close="gradeLedgerDialog">×</button></div><input id="gradeLedgerId" type="hidden"><div class="grid md:grid-cols-2 gap-3"><label class="text-sm">Tahun ajaran *<input id="ledgerAcademicYear" class="field mt-1" placeholder="2025/2026" required></label><label class="text-sm">Semester *<select id="ledgerSemester" class="field mt-1"><option value="1">Semester 1</option><option value="2">Semester 2</option></select></label><label class="text-sm">NIS *<input id="ledgerNis" class="field mt-1" required></label><label class="text-sm">Nama siswa *<input id="ledgerStudentName" class="field mt-1" required></label><label class="text-sm">Kelas *<input id="ledgerClassName" class="field mt-1" placeholder="XI-3" required></label><label class="text-sm">Mata pelajaran *<input id="ledgerSubjectName" class="field mt-1" required></label><label class="text-sm">Nilai Asli *<input id="ledgerOriginalScore" class="field mt-1" type="number" min="0" max="100" step="0.01" required></label><label class="text-sm">Nilai Akhir *<input id="ledgerFinalScore" class="field mt-1" type="number" min="0" max="100" step="0.01" required></label><label class="text-sm md:col-span-2">Catatan<input id="ledgerNotes" class="field mt-1" maxlength="500" placeholder="Opsional"></label></div><div class="flex justify-end gap-2 mt-5"><button type="button" class="btn soft" data-close="gradeLedgerDialog">Batal</button><button id="saveLedgerBtn" type="submit" class="btn primary">Simpan Legger</button></div></form></dialog>
+<!-- Subject Dialog -->
+<dialog id="subjectDialog">
+  <form id="subjectForm" class="p-6">
+    <div class="flex justify-between items-center pb-3 mb-4 border-b border-slate-100">
+      <h2 id="subjectDialogTitle" class="font-bold text-lg text-slate-900">Tambah Mata Pelajaran</h2>
+      <button type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 grid place-items-center text-slate-500 text-xl" data-close="subjectDialog">×</button>
+    </div>
+    <input id="subjectId" type="hidden">
+    <label class="text-xs font-bold uppercase tracking-wider text-slate-600 block">Nama mata pelajaran
+      <input id="newSubjectName" class="field mt-1 font-normal normal-case" placeholder="Contoh Matematika" maxlength="120" required>
+    </label>
+    <label id="subjectStatusField" class="text-xs font-bold uppercase tracking-wider text-slate-600 block mt-3.5 hidden">Status
+      <select id="subjectActive" class="field mt-1 font-normal normal-case">
+        <option value="true" selected>Aktif</option>
+        <option value="false">Nonaktif</option>
+      </select>
+    </label>
+    <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+      <button type="button" class="btn soft" data-close="subjectDialog">Batal</button>
+      <button id="subjectSubmitBtn" type="submit" class="btn primary">Simpan Mapel</button>
+    </div>
+  </form>
+</dialog>
 
+<!-- Interactive Topic Dialog -->
+<dialog id="interactiveTopicDialog">
+  <form id="interactiveTopicForm" class="p-6">
+    <div class="flex justify-between items-center pb-3 mb-4 border-b border-slate-100">
+      <h2 id="interactiveTopicDialogTitle" class="font-bold text-lg text-slate-900">Tambah Topik</h2>
+      <button type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 grid place-items-center text-slate-500 text-xl" data-close="interactiveTopicDialog">×</button>
+    </div>
+    <input id="interactiveTopicId" type="hidden">
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-3.5">Nama topik *
+      <input id="interactiveTopicName" class="field mt-1 font-normal normal-case" maxlength="120" placeholder="Contoh Stoikiometri" required>
+    </label>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-3.5">Deskripsi
+      <input id="interactiveTopicDescriptionInput" class="field mt-1 font-normal normal-case" maxlength="250" placeholder="Kumpulan materi pembelajaran">
+    </label>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Link folder materi (opsional)
+      <input id="interactiveTopicDriveUrlInput" class="field mt-1 font-normal normal-case" type="url" placeholder="https://drive.google.com/...">
+      <span class="muted text-xs font-normal normal-case block mt-1">Link bisa ditambahkan sekarang atau nanti.</span>
+    </label>
+    <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+      <button type="button" class="btn soft" data-close="interactiveTopicDialog">Batal</button>
+      <button id="saveInteractiveTopicBtn" type="submit" class="btn primary">Simpan Topik</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Grade Ledger Dialog -->
+<dialog id="gradeLedgerDialog">
+  <form id="gradeLedgerForm" class="p-6">
+    <div class="flex justify-between items-center pb-3 mb-4 border-b border-slate-100">
+      <h2 id="gradeLedgerDialogTitle" class="font-bold text-lg text-slate-900">Tambah Legger Tahun Lalu</h2>
+      <button type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 grid place-items-center text-slate-500 text-xl" data-close="gradeLedgerDialog">×</button>
+    </div>
+    <input id="gradeLedgerId" type="hidden">
+    <div class="grid md:grid-cols-2 gap-3.5">
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Tahun ajaran *<input id="ledgerAcademicYear" class="field mt-1 font-normal normal-case" placeholder="2025/2026" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Semester *
+        <select id="ledgerSemester" class="field mt-1 font-normal normal-case">
+          <option value="1" selected>Semester 1</option>
+          <option value="2">Semester 2</option>
+        </select>
+      </label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">NIS *<input id="ledgerNis" class="field mt-1 font-normal normal-case" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Nama siswa *<input id="ledgerStudentName" class="field mt-1 font-normal normal-case" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Kelas *<input id="ledgerClassName" class="field mt-1 font-normal normal-case" placeholder="XI-3" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Mata pelajaran *<input id="ledgerSubjectName" class="field mt-1 font-normal normal-case" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Nilai Asli *<input id="ledgerOriginalScore" class="field mt-1 font-normal normal-case" type="number" min="0" max="100" step="0.01" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600">Nilai Akhir *<input id="ledgerFinalScore" class="field mt-1 font-normal normal-case" type="number" min="0" max="100" step="0.01" required></label>
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600 md:col-span-2">Catatan<input id="ledgerNotes" class="field mt-1 font-normal normal-case" maxlength="500" placeholder="Opsional"></label>
+    </div>
+    <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+      <button type="button" class="btn soft" data-close="gradeLedgerDialog">Batal</button>
+      <button id="saveLedgerBtn" type="submit" class="btn primary">Simpan Legger</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Roster OCR Scan Dialog -->
 <dialog id="rosterScanDialog">
   <div class="p-6">
-    <div class="flex justify-between items-center mb-3"><h2 class="font-bold text-lg">Tambah Siswa dari Foto Absensi</h2><button type="button" class="text-xl" data-close="rosterScanDialog">×</button></div>
-    <p class="muted text-sm mb-4">Foto diproses di browser dan tidak disimpan. Periksa serta koreksi hasil baca sebelum menyimpan. Hasil tulisan tangan dapat kurang akurat.</p>
-    <label class="block text-sm font-semibold mb-1" for="rosterPhoto">Pilih foto daftar siswa</label>
+    <div class="flex justify-between items-center pb-3 mb-3 border-b border-slate-100">
+      <h2 class="font-bold text-lg text-slate-900">Tambah Siswa dari Foto Absensi</h2>
+      <button type="button" class="w-8 h-8 rounded-lg hover:bg-slate-100 grid place-items-center text-slate-500 text-xl" data-close="rosterScanDialog">×</button>
+    </div>
+    <p class="muted text-sm mb-4">Foto diproses langsung di browser dan tidak diunggah ke server. Periksa serta koreksi hasil baca sebelum menyimpan.</p>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" for="rosterPhoto">Pilih foto daftar siswa</label>
     <input id="rosterPhoto" class="field mb-3" type="file" accept="image/*">
-    <img id="rosterPreview" class="hidden max-h-64 max-w-full rounded-lg border mb-3" alt="Pratinjau foto absensi">
-    <div class="flex flex-wrap gap-2 mb-3"><button id="readRosterPhotoBtn" class="btn primary" type="button">Baca Foto</button><span id="rosterOcrStatus" class="muted text-sm self-center" aria-live="polite"></span></div>
-    <label class="block text-sm font-semibold mb-1" for="rosterOcrText">Teks hasil OCR (boleh dikoreksi)</label>
+    <img id="rosterPreview" class="hidden max-h-64 max-w-full rounded-xl border border-slate-200 mb-3" alt="Pratinjau foto absensi">
+    <div class="flex flex-wrap gap-2 mb-3">
+      <button id="readRosterPhotoBtn" class="btn primary" type="button">Baca Foto</button>
+      <span id="rosterOcrStatus" class="muted text-sm self-center" aria-live="polite"></span>
+    </div>
+    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5" for="rosterOcrText">Teks hasil OCR (boleh dikoreksi)</label>
     <textarea id="rosterOcrText" class="field mb-3" rows="5" placeholder="Hasil bacaan foto akan muncul di sini. Pastikan NIS dan nama terbaca benar."></textarea>
-    <div class="flex flex-wrap items-end gap-2 mb-4"><label class="text-sm font-semibold flex-1 min-w-48">Kelas untuk siswa di foto<select id="rosterClass" class="field mt-1"></select></label><button id="buildRosterPreviewBtn" class="btn soft" type="button">Susun Pratinjau</button></div>
-    <div class="overflow-x-auto mb-3"><table class="w-full"><thead><tr><th>NIS</th><th>NISN</th><th>Nama</th></tr></thead><tbody id="rosterPreviewBody"><tr><td colspan="3" class="muted">Belum ada hasil. Pilih foto lalu klik Baca Foto.</td></tr></tbody></table></div>
+    <div class="flex flex-wrap items-end gap-2 mb-4">
+      <label class="text-xs font-bold uppercase tracking-wider text-slate-600 flex-1 min-w-48">Kelas untuk siswa di foto
+        <select id="rosterClass" class="field mt-1 font-normal normal-case">
+          <option value="20418383-a520-4b3f-8bcb-83f33fcc77d0" selected>X-1</option>
+          <option value="641a1de3-c5a2-4fad-9149-5e6bc234bc0c">X-2</option>
+          <option value="257396a2-16dc-4bee-98b4-d49e0b7dd4fb">X-3</option>
+          <option value="35ae00fa-f2d8-4ae7-8bb3-64bd3709a3af">X-4</option>
+          <option value="5bc2e5d3-a690-40f5-8ffd-568865cd7521">XI-3</option>
+          <option value="6f5c19a0-56d1-4739-83f0-82c38ec4d86a">XI-5</option>
+        </select>
+      </label>
+      <button id="buildRosterPreviewBtn" class="btn soft" type="button">Susun Pratinjau</button>
+    </div>
+    <div class="overflow-x-auto rounded-xl border border-slate-200/80 mb-3">
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th>NIS</th>
+            <th>NISN</th>
+            <th>Nama</th>
+          </tr>
+        </thead>
+        <tbody id="rosterPreviewBody">
+          <tr><td colspan="3" class="muted">Belum ada hasil. Pilih foto lalu klik Baca Foto.</td></tr>
+        </tbody>
+      </table>
+    </div>
     <p id="rosterImportStatus" class="text-sm mb-3" aria-live="polite"></p>
-    <div class="flex justify-end gap-2"><button type="button" class="btn soft" data-close="rosterScanDialog">Batal</button><button id="saveRosterStudentsBtn" class="btn primary" type="button" disabled>Simpan Siswa yang Ditampilkan</button></div>
+    <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+      <button type="button" class="btn soft" data-close="rosterScanDialog">Batal</button>
+      <button id="saveRosterStudentsBtn" class="btn primary" type="button" disabled>Simpan Siswa yang Ditampilkan</button>
+    </div>
   </div>
 </dialog>
 
+<!-- ==================== APPLICATION SCRIPT ==================== -->
 <script>
 const SUPABASE_URL = "https://fdxzsszqwoturvkxmxas.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco";
@@ -317,7 +1699,7 @@ function applyNavigationIcons(){
 applyNavigationIcons();
 
 function alertBox(message,type='info'){
-  const el=$('alert'); el.textContent=message; el.className='mb-4 p-3 rounded-lg text-sm '+(type==='error'?'bg-red-50 text-red-700':type==='success'?'bg-emerald-50 text-emerald-700':'bg-violet-50 text-violet-800');
+  const el=$('alert'); el.textContent=message; el.className='mb-5 p-3.5 rounded-xl text-sm font-medium border '+(type==='error'?'bg-rose-50 text-rose-800 border-rose-200':type==='success'?'bg-emerald-50 text-emerald-800 border-emerald-200':'bg-violet-50 text-violet-900 border-violet-200');
   setTimeout(()=>el.classList.add('hidden'),5000);
 }
 function showPage(page){
@@ -327,7 +1709,7 @@ function showPage(page){
   $('pageTitle').textContent=({dashboard:'Dashboard',students:'Data Siswa',classes:'Manajemen Kelas',grades:'Manajemen Nilai','soal-uh':'Kumpulan Soal UH','soal-osn':'Kumpulan Soal OSN','learning-docs':'Perangkat Pembelajaran',interactive:'Ruang Interaktif',attendance:'Absensi',reports:'Laporan',notifications:'Notifikasi',audit:'Audit Trail'})[page]||page;
   document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   const mobileActive=[...document.querySelectorAll('#mobileNav .navbtn')].find(button=>button.dataset.page===page);
-  if(mobileActive&&window.getComputedStyle($('mobileNav')).display!=='none')mobileActive.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest',inline:'center'});
+  if(mobileActive)mobileActive.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest',inline:'center'});
   if(page==='dashboard')loadDashboard();
   if(page==='students')renderStudents();
   if(page==='classes'){renderClasses();renderSubjects();}
@@ -337,14 +1719,7 @@ function showPage(page){
   if(page==='notifications')loadNotifications();
   if(page==='audit')loadAudit();
 }
-document.addEventListener('click',event=>{
-  const button=event.target.closest('.navbtn[data-page]');
-  if(!button)return;
-  const page=button.dataset.page;
-  if(!$('page-'+page))return;
-  event.preventDefault();
-  showPage(page);
-},true);
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 document.querySelectorAll('[data-dashboard-action]').forEach(button=>button.addEventListener('click',()=>{
   const action=button.dataset.dashboardAction;
   if(action==='add-student'){showPage('students');$('addStudentBtn').click();return;}
@@ -353,8 +1728,8 @@ document.querySelectorAll('[data-dashboard-action]').forEach(button=>button.addE
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>$(b.dataset.close).close()));
 function renderInteractiveTopics(){
   const list=$('interactiveTopicList'),isAdmin=profile?.role==='administrator';
-  list.innerHTML=interactiveTopics.map(topic=>`<button type="button" class="card p-5 text-left hover:border-violet-300 hover:shadow-md transition" data-topic-open="${escapeHtml(topic.id)}"><span class="text-2xl">📁</span><h2 class="font-bold mt-3">${escapeHtml(topic.name)}${topic.is_active===false?' · Nonaktif':''}</h2><p class="muted text-sm mt-1">${escapeHtml(topic.description||'Kumpulan tautan pembelajaran '+topic.name+'.')}</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>`).join('');
-  if(isAdmin)list.insertAdjacentHTML('beforeend','<button type="button" id="addTopicCardBtn" class="card p-5 border-dashed text-left hover:border-violet-300"><span class="text-2xl">＋</span><h2 class="font-bold mt-3">Tambah Topik</h2><p class="muted text-sm mt-1">Buat folder topik baru untuk materi pembelajaran.</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Tambah →</span></button>');
+  list.innerHTML=interactiveTopics.map(topic=>`<button type="button" class="card p-5 text-left hover:border-violet-300 hover:shadow-md transition" data-topic-open="${escapeHtml(topic.id)}"><span class="w-11 h-11 rounded-xl bg-violet-50 text-violet-700 grid place-items-center text-xl">📁</span><h2 class="font-bold text-slate-900 mt-3.5">${escapeHtml(topic.name)}${topic.is_active===false?' · Nonaktif':''}</h2><p class="muted text-sm mt-1">${escapeHtml(topic.description||'Kumpulan tautan pembelajaran '+topic.name+'.')}</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Buka topik →</span></button>`).join('');
+  if(isAdmin)list.insertAdjacentHTML('beforeend','<button type="button" id="addTopicCardBtn" class="card p-5 border-dashed border-2 border-slate-300/80 text-left hover:border-violet-400 hover:bg-violet-50/30"><span class="w-11 h-11 rounded-xl bg-slate-100 text-slate-700 grid place-items-center text-xl font-bold">＋</span><h2 class="font-bold text-slate-900 mt-3.5">Tambah Topik</h2><p class="muted text-sm mt-1">Buat folder topik baru untuk materi pembelajaran.</p><span class="text-violet-700 text-sm font-semibold mt-4 inline-block">Tambah →</span></button>');
   $('addInteractiveTopicBtn').classList.toggle('hidden',!isAdmin);
   $('interactiveTopicError').classList.add('hidden');
 }
@@ -494,7 +1869,7 @@ function currentRosterRows(){
   return [...document.querySelectorAll('[data-roster-row]')].map(row=>({nis:row.querySelector('[data-roster-nis]').value.trim(),nisn:row.querySelector('[data-roster-nisn]').value.trim()||null,name:row.querySelector('[data-roster-name]').value.trim()}));
 }
 function showRosterImportStatus(message,isError=false){
-  const el=$('rosterImportStatus');el.textContent=message;el.className='text-sm mb-3 '+(isError?'text-red-700':'text-emerald-700');
+  const el=$('rosterImportStatus');el.textContent=message;el.className='text-sm mb-3 font-medium '+(isError?'text-rose-700':'text-emerald-700');
 }
 $('scanRosterBtn').addEventListener('click',()=>{if(rosterPhotoUrl){URL.revokeObjectURL(rosterPhotoUrl);rosterPhotoUrl=null;}$('rosterPhoto').value='';$('rosterPreview').src='';$('rosterPreview').classList.add('hidden');$('rosterOcrText').value='';$('rosterOcrStatus').textContent='';$('rosterImportStatus').textContent='';$('rosterPreviewBody').innerHTML='<tr><td colspan="3" class="muted">Pilih foto lalu klik Baca Foto.</td></tr>';$('saveRosterStudentsBtn').disabled=true;fillSelect('rosterClass',classes.filter(x=>x.is_active));$('rosterScanDialog').showModal();});
 $('rosterPhoto').addEventListener('change',()=>{const file=$('rosterPhoto').files?.[0];if(!file)return;if(rosterPhotoUrl)URL.revokeObjectURL(rosterPhotoUrl);rosterPhotoUrl=URL.createObjectURL(file);$('rosterPreview').src=rosterPhotoUrl;$('rosterPreview').classList.remove('hidden');$('rosterOcrText').value='';$('rosterPreviewBody').innerHTML='<tr><td colspan="3" class="muted">Foto siap dibaca.</td></tr>';$('saveRosterStudentsBtn').disabled=true;});
@@ -541,9 +1916,8 @@ function renderStudents(){
   const q=($('studentSearch')?.value||'').toLowerCase(),cl=$('studentClassFilter')?.value||'',st=$('studentStatusFilter')?.value??'active';
   const rows=students.filter(s=>(!q||[s.nis,s.nisn,s.full_name].join(' ').toLowerCase().includes(q))&&(!cl||s.current_class_id===cl)&&(!st||s.status===st));
   const isAdmin=profile?.role==='administrator';$('downloadStudentTemplateBtn').classList.toggle('hidden',!isAdmin);$('importStudentsBtn').classList.toggle('hidden',!isAdmin);
-  $('studentsBody').innerHTML=rows.map(s=>`<tr><td>${escapeHtml(s.nis)}</td><td>${escapeHtml(s.nisn||'—')}</td><td class="font-semibold">${escapeHtml(s.full_name)}</td><td>${escapeHtml(s.classes?.name||'—')}</td><td><span class="pill">${s.status}</span></td><td><button type="button" class="text-violet-700 font-semibold mr-2" data-edit="${s.id}">Edit</button>${s.status==='active'?`<button type="button" class="text-rose-600 mr-2" data-archive="${s.id}">Arsip</button>`:''}${profile?.role==='administrator'?`<button type="button" class="text-rose-700 font-semibold" data-delete-student="${s.id}">Hapus</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="text-center muted">Belum ada data siswa.</td></tr>';
+  $('studentsBody').innerHTML=rows.map(s=>`<tr><td class="tabular-nums text-slate-600">${escapeHtml(s.nis)}</td><td class="tabular-nums text-slate-500">${escapeHtml(s.nisn||'—')}</td><td class="font-semibold text-slate-900">${escapeHtml(s.full_name)}</td><td><span class="font-medium text-slate-700">${escapeHtml(s.classes?.name||'—')}</span></td><td><span class="pill ${s.status==='active'?'!bg-emerald-50 !text-emerald-700 !border-emerald-200':'!bg-amber-50 !text-amber-700 !border-amber-200'}">${s.status}</span></td><td><button type="button" class="text-violet-700 hover:text-violet-900 font-semibold mr-3" data-edit="${s.id}">Edit</button>${s.status==='active'?`<button type="button" class="text-amber-700 hover:text-amber-900 mr-3" data-archive="${s.id}">Arsip</button>`:''}${profile?.role==='administrator'?`<button type="button" class="text-rose-600 hover:text-rose-800 font-semibold" data-delete-student="${s.id}">Hapus</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="text-center muted py-8">Belum ada data siswa yang sesuai dengan filter.</td></tr>';
 }
-// Delegasi klik pada tbody tetap aktif walau baris siswa dirender ulang.
 $('studentsBody').addEventListener('click',event=>{
   const button=event.target.closest('button');if(!button)return;
   if(button.hasAttribute('data-edit'))return editStudent(button.dataset.edit);
@@ -564,7 +1938,7 @@ $('downloadStudentTemplateBtn').onclick=()=>{
   try{downloadExcelTemplate('Template_Impor_Siswa.xlsx','Template Impor Siswa','Data Siswa',['NIS','NISN','Nama Lengkap','Kelas','Jenis Kelamin (L/P)','Tanggal Lahir (YYYY-MM-DD)','Kontak'],['CONTOH','1234567890','Budi Santoso','XI-1','L','2008-05-12','08123456789'],[20,20,32,18,26,30,24],['Isi data pada lembar Data Siswa dan jangan ubah judul kolom.','Satu baris untuk satu siswa. Ganti baris contoh atau hapus; NIS CONTOH otomatis dilewati.','Wajib: NIS, Nama Lengkap, dan Kelas. NISN, Jenis Kelamin, Tanggal Lahir, dan Kontak boleh kosong.','Nama Kelas harus sama dengan kelas aktif di aplikasi. Jenis Kelamin isi L atau P.','Tanggal lahir gunakan format YYYY-MM-DD. Jika Excel mengubah tampilan tanggal, aplikasi tetap membaca tanggalnya.','Jika NIS/NISN/Kontak diawali nol, format sel sebagai Teks sebelum mengisi.','Simpan sebagai .xlsx, lalu unggah melalui tombol Impor Excel.']);showStudentCsvStatus('Template Excel berhasil dibuat. Buka lembar Petunjuk untuk langkah pengisian.',false);}catch(error){showStudentCsvStatus(error.message,true);}
 };
 $('importStudentsBtn').onclick=()=>{if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengimpor siswa.','error');$('studentsCsvInput').click();};
-function showStudentCsvStatus(message,isError=false){const el=$('studentCsvStatus');el.textContent=message;el.className='text-sm mb-3 '+(isError?'text-red-700':'text-emerald-700');el.classList.remove('hidden');}
+function showStudentCsvStatus(message,isError=false){const el=$('studentCsvStatus');el.textContent=message;el.className='text-sm mb-3 font-medium '+(isError?'text-rose-700':'text-emerald-700');el.classList.remove('hidden');}
 function studentCsvColumn(headers,aliases){return headers.findIndex(header=>aliases.includes(header));}
 $('studentsCsvInput').addEventListener('change',async event=>{
   const file=event.target.files?.[0];if(!file)return;
@@ -667,7 +2041,7 @@ async function deleteStudentPermanently(id){
   alertBox('Data siswa beserta data terkait berhasil dihapus permanen.','success');
 }
 function renderClasses(){
-  $('classesBody').innerHTML=classes.map(c=>`<tr><td class="font-semibold">${escapeHtml(c.name)}</td><td>${escapeHtml(c.academic_year||'—')}</td><td><span class="pill">${c.is_active?'Aktif':'Nonaktif'}</span></td><td>${profile?.role==='administrator'?`<div class="flex flex-wrap gap-x-3 gap-y-1"><button type="button" class="text-violet-700 font-semibold" data-class-edit="${c.id}">Edit</button><button type="button" class="text-rose-600" data-class-toggle="${c.id}" data-next-active="${!c.is_active}">${c.is_active?'Nonaktifkan':'Aktifkan'}</button><button type="button" class="text-rose-700 font-semibold" data-class-delete="${c.id}">Hapus</button></div>`:'—'}</td></tr>`).join('')||'<tr><td colspan="4" class="muted text-center">Belum ada kelas.</td></tr>';
+  $('classesBody').innerHTML=classes.map(c=>`<tr><td class="font-semibold text-slate-900">${escapeHtml(c.name)}</td><td class="text-slate-600">${escapeHtml(c.academic_year||'—')}</td><td><span class="pill ${c.is_active?'!bg-emerald-50 !text-emerald-700 !border-emerald-200':'!bg-slate-100 !text-slate-500'}">${c.is_active?'Aktif':'Nonaktif'}</span></td><td>${profile?.role==='administrator'?`<div class="flex flex-wrap gap-x-3 gap-y-1"><button type="button" class="text-violet-700 hover:text-violet-900 font-semibold" data-class-edit="${c.id}">Edit</button><button type="button" class="text-amber-700 hover:text-amber-900" data-class-toggle="${c.id}" data-next-active="${!c.is_active}">${c.is_active?'Nonaktifkan':'Aktifkan'}</button><button type="button" class="text-rose-600 hover:text-rose-800 font-semibold" data-class-delete="${c.id}">Hapus</button></div>`:'—'}</td></tr>`).join('')||'<tr><td colspan="4" class="muted text-center py-6">Belum ada kelas.</td></tr>';
   $('addClassBtn').classList.toggle('hidden',profile?.role!=='administrator');
 }
 $('classesBody').addEventListener('click',event=>{
@@ -731,7 +2105,7 @@ function renderSubjects(){
   const list=$('subjectsList');if(!list)return;
   const isAdmin=profile?.role==='administrator';
   if(!subjects.some(s=>s.id===selectedSubjectId))selectedSubjectId=null;
-  list.innerHTML=subjects.map(s=>isAdmin?`<button type="button" class="pill px-3 py-2 ${selectedSubjectId===s.id?'ring-2 ring-violet-500 bg-violet-100':''}" data-subject-select="${escapeHtml(s.id)}" aria-pressed="${selectedSubjectId===s.id}">${escapeHtml(s.name)}${s.is_active===false?' · Nonaktif':''}</button>`:`<span class="pill px-3 py-2">${escapeHtml(s.name)}${s.is_active===false?' · Nonaktif':''}</span>`).join('')||'<span class="muted text-sm">Belum ada mata pelajaran.</span>';
+  list.innerHTML=subjects.map(s=>isAdmin?`<button type="button" class="pill !px-3.5 !py-2 !text-xs cursor-pointer ${selectedSubjectId===s.id?'ring-2 ring-violet-500 !bg-violet-50 !text-violet-800 !border-violet-300':'hover:bg-slate-200/70'}" data-subject-select="${escapeHtml(s.id)}" aria-pressed="${selectedSubjectId===s.id}">${escapeHtml(s.name)}${s.is_active===false?' · Nonaktif':''}</button>`:`<span class="pill !px-3.5 !py-2 !text-xs">${escapeHtml(s.name)}${s.is_active===false?' · Nonaktif':''}</span>`).join('')||'<span class="muted text-sm">Belum ada mata pelajaran.</span>';
   $('addSubjectBtn').classList.toggle('hidden',profile?.role!=='administrator');
   $('editSubjectBtn').classList.toggle('hidden',!isAdmin);$('deleteSubjectBtn').classList.toggle('hidden',!isAdmin);
   $('editSubjectBtn').disabled=!selectedSubjectId;$('deleteSubjectBtn').disabled=!selectedSubjectId;
@@ -796,7 +2170,7 @@ function resetComponentEditor(){
 function renderComponentList(){
   const list=$('componentsList');
   const categoryNames={tugas:'Tugas',uh:'UH',ujian_akhir:'Ujian Akhir'};
-  list.innerHTML=components.map(c=>`<div class="flex flex-wrap items-center gap-2 border-b border-slate-100 py-2"><div class="flex-1 min-w-40"><span class="font-semibold">${escapeHtml(c.name)}</span><span class="pill ml-2">${escapeHtml(categoryNames[c.category]||'Belum dikelompokkan')}</span><span class="pill ml-1">${Number(c.weight)}%</span></div><button type="button" class="btn soft" data-component-edit="${c.id}">Edit</button><button type="button" class="btn danger" data-component-delete="${c.id}">Hapus</button></div>`).join('')||'<span class="muted">Belum ada komponen.</span>';
+  list.innerHTML=components.map(c=>`<div class="flex flex-wrap items-center gap-2 border-b border-slate-100 py-2.5"><div class="flex-1 min-w-40"><span class="font-semibold text-slate-900">${escapeHtml(c.name)}</span><span class="pill ml-2">${escapeHtml(categoryNames[c.category]||'Belum dikelompokkan')}</span><span class="pill !bg-violet-50 !text-violet-700 !border-violet-200 ml-1.5 tabular-nums">${Number(c.weight)}%</span></div><button type="button" class="btn soft !min-h-8 !py-1 !px-3 !text-xs" data-component-edit="${c.id}">Edit</button><button type="button" class="btn danger !min-h-8 !py-1 !px-3 !text-xs" data-component-delete="${c.id}">Hapus</button></div>`).join('')||'<span class="muted">Belum ada komponen penilaian untuk mapel ini.</span>';
   document.querySelectorAll('[data-component-edit]').forEach(button=>button.onclick=()=>{
     const component=components.find(item=>item.id===button.dataset.componentEdit);if(!component)return;
     editingComponentId=component.id;$('componentName').value=component.name;$('componentCategory').value=component.category||'tugas';$('componentWeight').value=component.weight;$('addComponentBtn').textContent='Simpan perubahan';$('cancelComponentEditBtn').classList.remove('hidden');$('componentEditorStatus').textContent='Sedang mengedit komponen. Ubah nama, kategori, atau bobot, lalu simpan.';$('componentName').focus();
@@ -840,10 +2214,10 @@ async function prepareGrades(){
   let allGrades=[];
   if(components.length){const ids=components.map(c=>c.id);const g=await db.from('grades').select('*').in('component_id',ids);if(g.error)alertBox(g.error.message,'error');else allGrades=g.data||[];}
   $('gradesBody').innerHTML=(studs||[]).map(s=>{
-    const cells=components.map(c=>{const v=allGrades.find(g=>g.student_id===s.id&&g.component_id===c.id)?.score??'';return `<td><input class="field w-24" type="number" min="0" max="${c.max_score}" data-grade-student="${s.id}" data-grade-component="${c.id}" value="${v}"></td>`}).join('');
+    const cells=components.map(c=>{const v=allGrades.find(g=>g.student_id===s.id&&g.component_id===c.id)?.score??'';return `<td><input class="field !w-24 tabular-nums" type="number" min="0" max="${c.max_score}" data-grade-student="${s.id}" data-grade-component="${c.id}" value="${v}"></td>`}).join('');
     const summary=calculateGradeSummary(s.id,components,allGrades);
-    return `<tr><td>${escapeHtml(s.nis)}</td><td>${escapeHtml(s.full_name)}</td>${cells}<td class="font-semibold">${summary.original===null?'—':summary.original.toFixed(2)}</td><td class="font-bold text-violet-800">${summary.final===null?'—':summary.final.toFixed(2)}</td></tr>`;
-  }).join('')||`<tr><td colspan="${components.length+4}" class="muted">Belum ada siswa pada kelas ini.</td></tr>`;
+    return `<tr><td class="tabular-nums text-slate-600">${escapeHtml(s.nis)}</td><td class="font-semibold text-slate-900">${escapeHtml(s.full_name)}</td>${cells}<td class="font-semibold tabular-nums text-slate-700">${summary.original===null?'—':summary.original.toFixed(2)}</td><td class="font-bold tabular-nums text-violet-700">${summary.final===null?'—':summary.final.toFixed(2)}</td></tr>`;
+  }).join('')||`<tr><td colspan="${components.length+4}" class="muted py-6 text-center">Belum ada siswa pada kelas ini.</td></tr>`;
 }
 $('loadGradesBtn').onclick=()=>{resetComponentEditor();prepareGrades();};$('gradeClass').onchange=()=>{resetComponentEditor();prepareGrades();};$('gradeSubject').onchange=()=>{resetComponentEditor();prepareGrades();};
 $('gradesBody').addEventListener('change',async e=>{
@@ -874,11 +2248,11 @@ function renderGradeLedger(){
   const rows=gradeLedgerRows.filter(row=>(!selectedYear||row.academic_year===selectedYear)&&(!query||[row.student_nis,row.student_name,row.class_name,row.subject_name,row.academic_year].join(' ').toLowerCase().includes(query)));
   const isAdmin=profile?.role==='administrator';
   $('addLedgerBtn').classList.toggle('hidden',!isAdmin);$('importLedgerBtn').classList.toggle('hidden',!isAdmin);$('downloadLedgerTemplateBtn').classList.toggle('hidden',!isAdmin);
-  $('ledgerBody').innerHTML=rows.map(row=>`<tr><td>${escapeHtml(row.academic_year)}</td><td>${escapeHtml(row.semester)}</td><td>${escapeHtml(row.student_nis)}</td><td class="font-semibold">${escapeHtml(row.student_name)}</td><td>${escapeHtml(row.class_name)}</td><td>${escapeHtml(row.subject_name)}</td><td>${Number(row.original_score).toFixed(2)}</td><td class="font-bold">${Number(row.final_score).toFixed(2)}</td><td>${escapeHtml(row.notes||'—')}</td><td>${isAdmin?`<button type="button" class="text-violet-700 font-semibold mr-2" data-ledger-edit="${escapeHtml(row.id)}">Edit</button><button type="button" class="text-rose-700 font-semibold" data-ledger-delete="${escapeHtml(row.id)}">Hapus</button>`:'—'}</td></tr>`).join('')||'<tr><td colspan="10" class="text-center muted">Belum ada data legger untuk filter ini.</td></tr>';
+  $('ledgerBody').innerHTML=rows.map(row=>`<tr><td>${escapeHtml(row.academic_year)}</td><td>${escapeHtml(row.semester)}</td><td class="tabular-nums">${escapeHtml(row.student_nis)}</td><td class="font-semibold text-slate-900">${escapeHtml(row.student_name)}</td><td>${escapeHtml(row.class_name)}</td><td>${escapeHtml(row.subject_name)}</td><td class="tabular-nums">${Number(row.original_score).toFixed(2)}</td><td class="font-bold tabular-nums text-violet-700">${Number(row.final_score).toFixed(2)}</td><td class="muted">${escapeHtml(row.notes||'—')}</td><td>${isAdmin?`<button type="button" class="text-violet-700 font-semibold mr-3" data-ledger-edit="${escapeHtml(row.id)}">Edit</button><button type="button" class="text-rose-600 font-semibold" data-ledger-delete="${escapeHtml(row.id)}">Hapus</button>`:'—'}</td></tr>`).join('')||'<tr><td colspan="10" class="text-center muted py-6">Belum ada data legger untuk filter ini.</td></tr>';
 }
 async function loadGradeLedger(){
   const {data,error}=await db.from('grade_ledger').select('*').order('academic_year',{ascending:false}).order('student_name');
-  if(error){gradeLedgerRows=[];renderGradeLedger();$('ledgerBody').innerHTML=`<tr><td colspan="10" class="text-red-700">Tabel legger belum siap. Jalankan file supabase/grade_ledger.sql di Supabase. (${escapeHtml(error.message)})</td></tr>`;return;}
+  if(error){gradeLedgerRows=[];renderGradeLedger();$('ledgerBody').innerHTML=`<tr><td colspan="10" class="text-rose-700">Tabel legger belum siap. Jalankan file supabase/grade_ledger.sql di Supabase. (${escapeHtml(error.message)})</td></tr>`;return;}
   gradeLedgerRows=data||[];renderGradeLedger();
 }
 function openGradeLedgerDialog(row=null){
@@ -980,7 +2354,7 @@ async function prepareAttendance(){
   if(!classId||!subjectId)return;
   const {data,error}=await db.from('students').select('id,nis,full_name').eq('current_class_id',classId).eq('status','active').order('full_name');
   if(error)return alertBox(error.message,'error');
-  $('attendanceBody').innerHTML=(data||[]).map(s=>`<tr><td>${escapeHtml(s.nis)}</td><td>${escapeHtml(s.full_name)}</td><td><select class="field" data-att-student="${s.id}"><option value="present">Hadir</option><option value="sick">Sakit</option><option value="permission">Izin</option><option value="absent">Alpa</option></select></td><td><input class="field" data-att-note="${s.id}" placeholder="Catatan"></td></tr>`).join('')||'<tr><td colspan="4">Belum ada siswa.</td></tr>';
+  $('attendanceBody').innerHTML=(data||[]).map(s=>`<tr><td class="tabular-nums text-slate-600">${escapeHtml(s.nis)}</td><td class="font-semibold text-slate-900">${escapeHtml(s.full_name)}</td><td><select class="field" data-att-student="${s.id}"><option value="present">Hadir</option><option value="sick">Sakit</option><option value="permission">Izin</option><option value="absent">Alpa</option></select></td><td><input class="field" data-att-note="${s.id}" placeholder="Catatan"></td></tr>`).join('')||'<tr><td colspan="4" class="muted py-6 text-center">Belum ada siswa.</td></tr>';
   const {data:sess}=await db.from('attendance_sessions').select('id').eq('class_id',classId).eq('subject_id',subjectId).eq('meeting_number',Number($('meetingNumber').value)).eq('meeting_date',$('attendanceDate').value).maybeSingle();
   if(sess){
     const {data:records}=await db.from('attendance_records').select('*').eq('session_id',sess.id);
@@ -991,16 +2365,16 @@ $('attendanceClass').onchange=()=>{resetAttendanceEditState();prepareAttendance(
 async function loadAttendanceSessions(){
   const body=$('attendanceSessionsBody');
   const {data,error}=await db.from('attendance_sessions').select('id,class_id,subject_id,meeting_number,meeting_date').order('meeting_date',{ascending:false}).order('meeting_number',{ascending:false}).limit(50);
-  if(error){attendanceSessions=[];body.innerHTML=`<tr><td colspan="5" class="text-red-700">Gagal memuat riwayat absensi: ${escapeHtml(error.message)}</td></tr>`;return;}
+  if(error){attendanceSessions=[];body.innerHTML=`<tr><td colspan="5" class="text-rose-700">Gagal memuat riwayat absensi: ${escapeHtml(error.message)}</td></tr>`;return;}
   attendanceSessions=data||[];
   const isAdmin=profile?.role==='administrator';
   body.innerHTML=attendanceSessions.map(session=>{
     const className=classes.find(item=>item.id===session.class_id)?.name||'Kelas';
     const subjectName=subjects.find(item=>item.id===session.subject_id)?.name||'Mata Pelajaran';
     const sessionDate=session.meeting_date?new Date(`${session.meeting_date}T00:00:00`).toLocaleDateString('id-ID',{dateStyle:'medium'}):'—';
-    const actions=isAdmin?`<div class="flex flex-wrap gap-x-3 gap-y-1"><button type="button" class="text-violet-700 font-semibold" data-attendance-edit="${escapeHtml(session.id)}">Edit</button><button type="button" class="text-rose-700 font-semibold" data-attendance-delete="${escapeHtml(session.id)}">Hapus</button></div>`:'—';
-    return `<tr><td class="font-semibold">${escapeHtml(className)}</td><td>${escapeHtml(subjectName)}</td><td>${escapeHtml(sessionDate)}</td><td>${escapeHtml(session.meeting_number)}</td><td>${actions}</td></tr>`;
-  }).join('')||'<tr><td colspan="5" class="muted text-center">Belum ada sesi absensi tersimpan.</td></tr>';
+    const actions=isAdmin?`<div class="flex flex-wrap gap-x-3 gap-y-1"><button type="button" class="text-violet-700 font-semibold" data-attendance-edit="${escapeHtml(session.id)}">Edit</button><button type="button" class="text-rose-600 font-semibold" data-attendance-delete="${escapeHtml(session.id)}">Hapus</button></div>`:'—';
+    return `<tr><td class="font-semibold text-slate-900">${escapeHtml(className)}</td><td>${escapeHtml(subjectName)}</td><td>${escapeHtml(sessionDate)}</td><td class="tabular-nums">${escapeHtml(session.meeting_number)}</td><td>${actions}</td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="muted text-center py-6">Belum ada sesi absensi tersimpan.</td></tr>';
 }
 async function editAttendanceSession(id){
   if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengedit sesi absensi.','error');
@@ -1054,7 +2428,7 @@ async function loadDashboard(){
     {label:'Entri Nilai',value:g.count??'—',note:'Nilai tersimpan',icon:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>'},
     {label:'Sesi Absensi',value:a.count??'—',note:'Seluruh sesi',icon:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M9 16l2 2 4-4"/>'}
   ];
-  $('stats').innerHTML=metrics.map(item=>`<div class="dashboard-stat card"><span class="dashboard-stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${item.icon}</svg></span><div class="min-w-0"><div class="text-xs md:text-sm muted">${item.label}</div><div class="dashboard-stat-value">${item.value}</div><div class="text-[.68rem] muted mt-1">${item.note}</div></div></div>`).join('');
+  $('stats').innerHTML=metrics.map(item=>`<div class="dashboard-stat card"><span class="dashboard-stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true">${item.icon}</svg></span><div class="min-w-0"><div class="text-xs md:text-sm font-medium muted">${item.label}</div><div class="dashboard-stat-value">${item.value}</div><div class="text-[0.7rem] muted mt-1">${item.note}</div></div></div>`).join('');
   const addStudentAction=document.querySelector('[data-dashboard-action="add-student"]');
   if(addStudentAction)addStudentAction.classList.toggle('hidden',profile?.role!=='administrator');
   $('dashboardTodayAttendanceCount').textContent=todayAttendance.error?'—':String(todayAttendance.count??0);
@@ -1068,17 +2442,17 @@ async function loadDashboard(){
     const action=/insert|create|add|tambah/.test(rawAction)?'Data ditambahkan':/update|edit|ubah/.test(rawAction)?'Data diperbarui':/delete|remove|hapus|archive/.test(rawAction)?'Data dihapus atau diarsipkan':String(item.action||'Aktivitas');
     const table=tableNames[item.table_name]||String(item.table_name||'Data');
     const date=item.created_at?new Date(item.created_at).toLocaleString('id-ID',{dateStyle:'medium',timeStyle:'short'}):'';
-    return `<div class="flex items-start gap-3 py-3"><span class="mt-1.5 h-2.5 w-2.5 rounded-full bg-violet-500 shrink-0"></span><div class="min-w-0"><p class="text-sm font-semibold">${escapeHtml(action)} · ${escapeHtml(table)}</p><p class="muted text-xs mt-1">${escapeHtml(date)}</p></div></div>`;
+    return `<div class="flex items-start gap-3 py-3"><span class="mt-1.5 h-2.5 w-2.5 rounded-full bg-violet-500 shrink-0 ring-4 ring-violet-50"></span><div class="min-w-0"><p class="text-sm font-semibold text-slate-800">${escapeHtml(action)} · ${escapeHtml(table)}</p><p class="muted text-xs mt-0.5">${escapeHtml(date)}</p></div></div>`;
   }).join('')||'<p class="muted text-sm py-3">Belum ada aktivitas tercatat.</p>';
 }
 async function loadNotifications(){
   const {data,error}=await db.from('notifications').select('*').order('created_at',{ascending:false}).limit(50);
-  $('notificationsList').innerHTML=error?escapeHtml(error.message):(data||[]).map(n=>`<div class="py-3 border-b"><div class="font-semibold">${escapeHtml(n.title)}</div><p class="muted">${escapeHtml(n.message)}</p><small class="muted">${new Date(n.created_at).toLocaleString('id-ID')}</small></div>`).join('')||'Belum ada notifikasi.';
+  $('notificationsList').innerHTML=error?escapeHtml(error.message):(data||[]).map(n=>`<div class="py-3.5 border-b border-slate-100 last:border-b-0"><div class="font-semibold text-slate-900">${escapeHtml(n.title)}</div><p class="muted mt-0.5">${escapeHtml(n.message)}</p><small class="muted text-xs mt-1 inline-block">${new Date(n.created_at).toLocaleString('id-ID')}</small></div>`).join('')||'Belum ada notifikasi.';
 }
 async function loadAudit(){
   $('clearAuditBtn').classList.toggle('hidden',profile?.role!=='administrator');
   const {data,error}=await db.from('audit_logs').select('id,actor_id,action,table_name,record_id,created_at').order('created_at',{ascending:false}).limit(100);
-  $('auditBody').innerHTML=error?`<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`:(data||[]).map(x=>`<tr><td>${new Date(x.created_at).toLocaleString('id-ID')}</td><td>${escapeHtml(x.actor_id||'System')}</td><td>${escapeHtml(x.action)}</td><td>${escapeHtml(x.table_name)}</td><td>${escapeHtml(x.record_id||'')}</td></tr>`).join('');
+  $('auditBody').innerHTML=error?`<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`:(data||[]).map(x=>`<tr><td class="tabular-nums text-slate-600">${new Date(x.created_at).toLocaleString('id-ID')}</td><td>${escapeHtml(x.actor_id||'System')}</td><td><span class="pill">${escapeHtml(x.action)}</span></td><td class="font-medium text-slate-800">${escapeHtml(x.table_name)}</td><td class="font-mono text-xs text-slate-500">${escapeHtml(x.record_id||'')}</td></tr>`).join('');
 }
 $('clearAuditBtn').addEventListener('click',async()=>{
   if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat membersihkan Audit Trail.','error');
@@ -1106,7 +2480,7 @@ async function generateReport(){
     (comps||[]).forEach(c=>{const gr=grades.find(g=>g.student_id===s.id&&g.component_id===c.id);if(gr&&gr.score!==null){weighted+=Number(gr.score)*Number(c.weight)/100;weight+=Number(c.weight);}});
     return {nis:s.nis,nama:s.full_name,nilai_akhir:weight?Number(weighted.toFixed(2)):''};
   });
-  $('reportResult').innerHTML=`<h2 class="font-bold mb-3">Laporan · ${escapeHtml(classes.find(c=>c.id===classId)?.name||'')} · ${escapeHtml(subjects.find(s=>s.id===subjectId)?.name||'')}</h2><table class="w-full"><thead><tr><th>NIS</th><th>Nama</th><th>Nilai Akhir (sementara)</th></tr></thead><tbody>${lastReport.map(r=>`<tr><td>${escapeHtml(r.nis)}</td><td>${escapeHtml(r.nama)}</td><td>${r.nilai_akhir}</td></tr>`).join('')}</tbody></table><p class="text-xs muted mt-3">Nilai akhir dihitung dari komponen yang sudah memiliki nilai; pastikan bobot penilaian sesuai konfigurasi sekolah.</p>`;
+  $('reportResult').innerHTML=`<h2 class="font-bold text-base text-slate-900 mb-3">Laporan · ${escapeHtml(classes.find(c=>c.id===classId)?.name||'')} · ${escapeHtml(subjects.find(s=>s.id===subjectId)?.name||'')}</h2><div class="overflow-x-auto rounded-xl border border-slate-200/80"><table class="w-full"><thead><tr><th>NIS</th><th>Nama</th><th>Nilai Akhir (sementara)</th></tr></thead><tbody>${lastReport.map(r=>`<tr><td class="tabular-nums">${escapeHtml(r.nis)}</td><td class="font-semibold text-slate-900">${escapeHtml(r.nama)}</td><td class="font-bold tabular-nums text-violet-700">${r.nilai_akhir}</td></tr>`).join('')}</tbody></table></div><p class="text-xs muted mt-3">Nilai akhir dihitung dari komponen yang sudah memiliki nilai; pastikan bobot penilaian sesuai konfigurasi sekolah.</p>`;
 }
 $('generateReportBtn').onclick=generateReport;$('printReportBtn').onclick=()=>window.print();
 $('exportReportBtn').onclick=()=>{if(!lastReport.length)return alertBox('Buat laporan terlebih dahulu.','error');const csv=[Object.keys(lastReport[0]).join(','),...lastReport.map(r=>Object.values(r).map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='ACADEMIA_Laporan.csv';a.click();URL.revokeObjectURL(a.href);};
