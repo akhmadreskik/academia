@@ -200,7 +200,8 @@
         <section id="page-attendance" class="page hidden">
           <div class="mb-4"><h1 class="text-2xl font-bold">Absensi Pertemuan</h1><p class="muted text-sm">Pencatatan hadir, sakit, izin, dan alpa.</p></div>
           <div class="card p-4 grid md:grid-cols-4 gap-3 mb-4"><select id="attendanceClass" class="field"></select><select id="attendanceSubject" class="field"></select><input id="attendanceDate" type="date" class="field"><input id="meetingNumber" type="number" min="1" value="1" class="field" placeholder="Pertemuan ke"></div>
-          <div class="card p-4"><div class="flex justify-between items-center mb-3"><h2 class="font-bold">Daftar kehadiran</h2><button id="saveAttendanceBtn" class="btn primary">Simpan Absensi</button></div><div class="overflow-x-auto"><table class="w-full"><thead><tr><th>NIS</th><th>Nama</th><th>Status kehadiran</th><th>Catatan</th></tr></thead><tbody id="attendanceBody"></tbody></table></div></div>
+          <div class="card p-4"><div class="flex flex-wrap justify-between items-center gap-2 mb-3"><h2 class="font-bold">Daftar kehadiran</h2><div class="flex gap-2"><button id="cancelAttendanceEditBtn" class="btn soft hidden" type="button">Batal Edit</button><button id="saveAttendanceBtn" class="btn primary" type="button">Simpan Absensi</button></div></div><div class="overflow-x-auto"><table class="w-full"><thead><tr><th>NIS</th><th>Nama</th><th>Status kehadiran</th><th>Catatan</th></tr></thead><tbody id="attendanceBody"></tbody></table></div></div>
+          <div class="card p-4 mt-4"><div class="mb-3"><h2 class="font-bold">Riwayat Sesi Absensi</h2><p class="muted text-sm">Edit untuk memuat kembali sesi ke formulir, atau hapus satu sesi beserta data kehadirannya.</p></div><div class="overflow-x-auto"><table class="w-full"><thead><tr><th>Kelas</th><th>Mata Pelajaran</th><th>Tanggal</th><th>Pertemuan</th><th>Aksi</th></tr></thead><tbody id="attendanceSessionsBody"><tr><td colspan="5" class="muted">Memuat riwayat absensi…</td></tr></tbody></table></div></div>
         </section>
 
         <section id="page-reports" class="page hidden">
@@ -261,7 +262,7 @@ const SUPABASE_URL = "https://fdxzsszqwoturvkxmxas.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
-let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], activeInteractiveTopicId=null, gradeLedgerRows=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null, deferredInstallPrompt=null;
+let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], activeInteractiveTopicId=null, gradeLedgerRows=[], attendanceSessions=[], editingAttendanceSessionId=null, currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null, deferredInstallPrompt=null;
 const installButtons=[...document.querySelectorAll('[data-install-app]')];
 const setInstallStatus=message=>{const status=$('installStatus');if(status)status.textContent=message;};
 const notifyInstallResult=(message,type='info')=>{setInstallStatus(message);if(!$('appView').classList.contains('hidden'))alertBox(message,type);};
@@ -322,7 +323,7 @@ function showPage(page){
   if(page==='classes'){renderClasses();renderSubjects();}
   if(page==='grades'){prepareGrades();loadGradeLedger();}
   if(page==='interactive')loadInteractiveTopics();
-  if(page==='attendance')prepareAttendance();
+  if(page==='attendance'){prepareAttendance();loadAttendanceSessions();}
   if(page==='notifications')loadNotifications();
   if(page==='audit')loadAudit();
 }
@@ -954,6 +955,9 @@ $('ledgerCsvInput').addEventListener('change',async event=>{
   await loadGradeLedger();alertBox(`${parsed.length} baris legger berhasil diimpor; ${exampleSkipped} baris contoh dilewati. Baris dengan NIS, tahun, semester, dan mapel sama akan diperbarui.`, 'success');
 });
 $('attendanceDate').value=new Date().toISOString().slice(0,10);
+function resetAttendanceEditState(){
+  editingAttendanceSessionId=null;$('saveAttendanceBtn').textContent='Simpan Absensi';$('cancelAttendanceEditBtn').classList.add('hidden');
+}
 async function prepareAttendance(){
   const classId=$('attendanceClass').value,subjectId=$('attendanceSubject').value;
   if(!classId||!subjectId)return;
@@ -966,7 +970,45 @@ async function prepareAttendance(){
     (records||[]).forEach(r=>{const st=document.querySelector(`[data-att-student="${r.student_id}"]`),nt=document.querySelector(`[data-att-note="${r.student_id}"]`);if(st)st.value=r.status;if(nt)nt.value=r.notes||'';});
   }
 }
-$('attendanceClass').onchange=prepareAttendance;$('attendanceSubject').onchange=prepareAttendance;$('attendanceDate').onchange=prepareAttendance;$('meetingNumber').onchange=prepareAttendance;
+$('attendanceClass').onchange=()=>{resetAttendanceEditState();prepareAttendance();};$('attendanceSubject').onchange=()=>{resetAttendanceEditState();prepareAttendance();};$('attendanceDate').onchange=()=>{resetAttendanceEditState();prepareAttendance();};$('meetingNumber').onchange=()=>{resetAttendanceEditState();prepareAttendance();};
+async function loadAttendanceSessions(){
+  const body=$('attendanceSessionsBody');
+  const {data,error}=await db.from('attendance_sessions').select('id,class_id,subject_id,meeting_number,meeting_date').order('meeting_date',{ascending:false}).order('meeting_number',{ascending:false}).limit(50);
+  if(error){attendanceSessions=[];body.innerHTML=`<tr><td colspan="5" class="text-red-700">Gagal memuat riwayat absensi: ${escapeHtml(error.message)}</td></tr>`;return;}
+  attendanceSessions=data||[];
+  const isAdmin=profile?.role==='administrator';
+  body.innerHTML=attendanceSessions.map(session=>{
+    const className=classes.find(item=>item.id===session.class_id)?.name||'Kelas';
+    const subjectName=subjects.find(item=>item.id===session.subject_id)?.name||'Mata Pelajaran';
+    const sessionDate=session.meeting_date?new Date(`${session.meeting_date}T00:00:00`).toLocaleDateString('id-ID',{dateStyle:'medium'}):'—';
+    const actions=isAdmin?`<div class="flex flex-wrap gap-x-3 gap-y-1"><button type="button" class="text-violet-700 font-semibold" data-attendance-edit="${escapeHtml(session.id)}">Edit</button><button type="button" class="text-rose-700 font-semibold" data-attendance-delete="${escapeHtml(session.id)}">Hapus</button></div>`:'—';
+    return `<tr><td class="font-semibold">${escapeHtml(className)}</td><td>${escapeHtml(subjectName)}</td><td>${escapeHtml(sessionDate)}</td><td>${escapeHtml(session.meeting_number)}</td><td>${actions}</td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="muted text-center">Belum ada sesi absensi tersimpan.</td></tr>';
+}
+async function editAttendanceSession(id){
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat mengedit sesi absensi.','error');
+  const session=attendanceSessions.find(item=>item.id===id);if(!session)return alertBox('Sesi absensi tidak ditemukan. Muat ulang halaman lalu coba lagi.','error');
+  $('attendanceClass').value=session.class_id;$('attendanceSubject').value=session.subject_id;$('attendanceDate').value=session.meeting_date;$('meetingNumber').value=session.meeting_number;
+  editingAttendanceSessionId=session.id;await prepareAttendance();$('saveAttendanceBtn').textContent='Simpan Perubahan';$('cancelAttendanceEditBtn').classList.remove('hidden');
+  document.getElementById('page-attendance').scrollIntoView({behavior:'smooth',block:'start'});alertBox('Sesi dimuat. Ubah status atau catatan siswa, lalu pilih Simpan Perubahan.','success');
+}
+async function deleteAttendanceSession(id){
+  const session=attendanceSessions.find(item=>item.id===id);if(!session)return;
+  if(profile?.role!=='administrator')return alertBox('Hanya Administrator yang dapat menghapus sesi absensi.','error');
+  const className=classes.find(item=>item.id===session.class_id)?.name||'kelas';
+  const subjectName=subjects.find(item=>item.id===session.subject_id)?.name||'mata pelajaran';
+  if(!confirm(`Hapus sesi ${className} · ${subjectName} · pertemuan ${session.meeting_number} tanggal ${session.meeting_date}? Seluruh catatan kehadiran dalam sesi ini ikut dihapus.`))return;
+  const {error}=await db.rpc('delete_attendance_session',{p_session_id:id});
+  if(error)return alertBox('Gagal menghapus sesi absensi: '+error.message+' Pastikan SQL delete_attendance_session sudah dijalankan di Supabase.','error');
+  if(editingAttendanceSessionId===id){resetAttendanceEditState();await prepareAttendance();}
+  await loadAttendanceSessions();alertBox('Sesi absensi berhasil dihapus.','success');
+}
+$('attendanceSessionsBody').addEventListener('click',event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.hasAttribute('data-attendance-edit'))return editAttendanceSession(button.dataset.attendanceEdit);
+  if(button.hasAttribute('data-attendance-delete'))return deleteAttendanceSession(button.dataset.attendanceDelete);
+});
+$('cancelAttendanceEditBtn').onclick=async()=>{resetAttendanceEditState();await prepareAttendance();alertBox('Edit sesi dibatalkan. Data tersimpan dimuat kembali.');};
 $('saveAttendanceBtn').onclick=async()=>{
   const class_id=$('attendanceClass').value,subject_id=$('attendanceSubject').value,meeting_number=Number($('meetingNumber').value),meeting_date=$('attendanceDate').value;
   if(!class_id||!subject_id||!meeting_number||!meeting_date)return alertBox('Lengkapi kelas, mapel, pertemuan, dan tanggal.','error');
@@ -975,7 +1017,8 @@ $('saveAttendanceBtn').onclick=async()=>{
   const rows=[...document.querySelectorAll('[data-att-student]')].map(el=>({session_id:session.id,student_id:el.dataset.attStudent,status:el.value,notes:document.querySelector(`[data-att-note="${el.dataset.attStudent}"]`)?.value||'',marked_by:currentUser.id}));
   const {error:recErr}=await db.from('attendance_records').upsert(rows,{onConflict:'session_id,student_id'});
   if(recErr)return alertBox('Gagal menyimpan catatan absensi: '+recErr.message,'error');
-  alertBox('Absensi berhasil disimpan ke cloud.','success');
+  const message=editingAttendanceSessionId?'Perubahan absensi berhasil disimpan.':'Absensi berhasil disimpan ke cloud.';
+  resetAttendanceEditState();await loadAttendanceSessions();alertBox(message,'success');
 };
 async function loadDashboard(){
   const now=new Date(),today=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
