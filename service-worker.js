@@ -1,4 +1,4 @@
-const CACHE_NAME = 'academia-static-v11';
+const CACHE_NAME = 'academia-static-v12';
 const OFFLINE_PAGE = './offline.html';
 
 self.addEventListener('install', event => {
