@@ -2,11 +2,12 @@
 <html lang="id">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#21103c">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ACADEMIA">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
@@ -18,14 +19,14 @@
   <style>
     :root{--navy:#21103c;--navy-soft:#2b174b;--violet:#7955d9;--violet-dark:#603fc0;--lav:#b69aff;--page:#f7f8fc;--line:#e8eaf2}
     html{scroll-behavior:smooth}
-    body{background:var(--page);color:#101828;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em}
+    body{min-height:100vh;min-height:100dvh;background:var(--page);color:#101828;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.01em}
     button,a,input,select,textarea{transition:color .18s ease,background-color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease,opacity .18s ease}
     button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #a78bfa80;outline-offset:2px}
-    .btn{padding:.62rem .95rem;border-radius:.75rem;font-weight:650;font-size:.875rem;box-shadow:0 1px 2px #1018280b}
+    .btn{min-height:2.75rem;padding:.62rem .95rem;border-radius:.75rem;font-weight:650;font-size:.875rem;box-shadow:0 1px 2px #1018280b;touch-action:manipulation}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
     .primary{background:var(--violet);color:white}.primary:hover{background:var(--violet-dark);box-shadow:0 5px 14px #7955d933;transform:translateY(-1px)}
     .soft{background:#f1edff;color:#5939b5}.soft:hover{background:#e8e0ff;transform:translateY(-1px)}.danger{background:#fee2e2;color:#991b1b}.danger:hover{background:#fecaca;transform:translateY(-1px)}
-    .field{width:100%;border:1px solid #e2e8f0;border-radius:.7rem;padding:.68rem .8rem;background:white}
+    .field{width:100%;min-height:2.75rem;border:1px solid #e2e8f0;border-radius:.7rem;padding:.68rem .8rem;background:white;font-size:16px;touch-action:manipulation}
     .field:focus{border-color:#9b7bea;box-shadow:0 0 0 3px #7955d91a;outline:none}
     .card{background:white;border:1px solid var(--line);border-radius:1rem;box-shadow:0 5px 22px #0f172a08;transition:border-color .2s ease,box-shadow .2s ease}
     .card:hover{border-color:#ddd6ef;box-shadow:0 8px 26px #21103c0d}
@@ -33,7 +34,7 @@
     .sidebar{background:linear-gradient(180deg,var(--navy) 0%,#24113f 62%,#1d0d35 100%);box-shadow:12px 0 36px #21103c12}
     .brand-mark{display:grid;place-items:center;width:2.7rem;height:2.7rem;border:1px solid #ffffff25;border-radius:.9rem;background:#ffffff14;color:#fff;box-shadow:inset 0 1px #ffffff20}
     .nav-section-label{padding:.85rem .75rem .35rem;color:#a996c4;font-size:.64rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
-    .navbtn{position:relative;display:flex;align-items:center;gap:.75rem;width:100%;padding:.68rem .8rem;border:1px solid transparent;border-radius:.78rem;text-align:left;color:#e8e0f4;font-size:.9rem;font-weight:550;cursor:pointer}
+    .navbtn{position:relative;display:flex;align-items:center;gap:.75rem;width:100%;min-height:2.75rem;padding:.68rem .8rem;border:1px solid transparent;border-radius:.78rem;text-align:left;color:#e8e0f4;font-size:.9rem;font-weight:550;cursor:pointer;touch-action:manipulation}
     .navbtn svg{width:1.13rem;height:1.13rem;flex:0 0 auto;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;opacity:.86}
     #sideNav .navbtn:hover{background:#ffffff10;color:white;border-color:#ffffff12;transform:translateX(2px)}
     #sideNav .navbtn.active{background:linear-gradient(100deg,#eee9ff 0%,#f5f1ff 100%);color:#5b3bb8;border-color:#ffffff70;font-weight:750;box-shadow:0 5px 18px #12092125}
@@ -46,13 +47,18 @@
     .page:not(.hidden){animation:page-enter .24s ease both}
     @keyframes page-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
     tbody tr{transition:background-color .16s ease}tbody tr:hover{background:#faf9ff}
-    #appView main>header{position:sticky;top:0;z-index:30;background:#ffffffed;backdrop-filter:blur(14px)}
+    #appView main>header{position:sticky;top:0;z-index:30;min-height:4.75rem;padding-top:calc(1rem + env(safe-area-inset-top));background:#ffffffed;backdrop-filter:blur(14px)}
+    #mobileNav{position:sticky;top:calc(4.75rem + env(safe-area-inset-top));z-index:25}
+    #appView main>div:last-child{padding-bottom:calc(1rem + env(safe-area-inset-bottom))}
+    #pageTitle{max-width:min(52vw,34rem);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    #userLine{max-width:58vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    @media(max-width:420px){#appView main>header{padding-left:.75rem;padding-right:.75rem}#pageTitle{max-width:40vw}#userLine{max-width:45vw}#mobileNav{padding-left:.5rem;padding-right:.5rem}#mobileNav .navbtn{padding:.62rem .62rem;font-size:.77rem}.btn{padding:.58rem .72rem}}
     @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
     th,td{padding:.7rem .65rem;border-bottom:1px solid #eef0f4;text-align:left;font-size:.85rem;white-space:nowrap}
     th{color:#64748b;font-weight:700;background:#fafafa}
     .pill{font-size:.72rem;padding:.2rem .5rem;border-radius:999px;background:#f1f5f9}
     /* Gunakan utility hidden milik Tailwind agar responsive classes seperti lg:flex dapat bekerja. */
-    dialog{border:0;border-radius:1rem;padding:0;max-width:38rem;width:calc(100% - 2rem);box-shadow:0 20px 70px #0f172a40}
+    dialog{border:0;border-radius:1rem;padding:0;max-width:38rem;width:calc(100% - 2rem);max-height:calc(100dvh - 1rem);overflow:auto;box-shadow:0 20px 70px #0f172a40}
     dialog::backdrop{background:#10091c99}
   </style>
 </head>
@@ -65,11 +71,12 @@
   </section>
   <section class="flex items-center justify-center p-6">
     <form id="loginForm" class="w-full max-w-md card p-8">
-      <div class="text-2xl font-extrabold" style="color:#432477">ACADEMIA</div><p class="muted text-sm mt-1 mb-7">Masuk ke akun sekolah Anda</p>
+      <div class="flex items-center justify-between gap-3"><div class="text-2xl font-extrabold" style="color:#432477">ACADEMIA</div><button type="button" class="btn soft hidden" data-install-app>Pasang Aplikasi</button></div><p class="muted text-sm mt-1 mb-7">Masuk ke akun sekolah Anda</p>
       <label class="block text-sm font-semibold mb-1">Email</label><input id="loginEmail" class="field mb-4" type="email" autocomplete="username" required placeholder="nama@sekolah.sch.id">
       <label class="block text-sm font-semibold mb-1">Password</label><input id="loginPassword" class="field mb-5" type="password" autocomplete="current-password" required placeholder="Password akun">
       <button class="btn primary w-full" type="submit">SIGN IN</button>
       <p id="loginError" class="text-sm text-red-600 mt-3"></p>
+      <p id="installStatus" class="text-xs muted mt-3" aria-live="polite">Di Android, buka menu Chrome ⋮ lalu pilih Instal aplikasi atau Tambahkan ke layar utama.</p>
       <p class="text-xs muted mt-5">Akun dibuat oleh Administrator. Pendaftaran publik tidak tersedia.</p>
     </form>
   </section>
@@ -106,9 +113,9 @@
       <div class="mt-3 mx-1 rounded-xl border border-white/10 bg-white/[.06] px-3 py-3"><div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,.12)]"></span><span class="text-xs font-semibold text-white/90">Cloud terhubung</span></div><div class="text-[.67rem] text-violet-200 mt-1.5 pl-4">Data tersinkron ke Supabase</div></div>
     </aside>
     <main class="flex-1 min-w-0">
-      <header class="bg-white border-b border-slate-200 px-4 md:px-7 py-4 flex justify-between items-center">
+      <header class="bg-white border-b border-slate-200 px-4 md:px-7 py-4 flex justify-between items-center gap-2">
         <div><div id="pageTitle" class="font-bold text-lg">Dashboard</div><div id="userLine" class="text-xs muted"></div></div>
-        <button id="logoutBtn" class="btn soft">Logout</button>
+        <div class="flex items-center gap-2 shrink-0"><button type="button" class="btn primary hidden" data-install-app>Pasang</button><button id="logoutBtn" class="btn soft">Keluar</button></div>
       </header>
       <nav id="mobileNav" class="lg:hidden bg-white/95 backdrop-blur border-b border-slate-200 px-3 py-2 flex gap-2 overflow-x-auto shadow-sm">
         <button class="navbtn whitespace-nowrap" data-page="dashboard" data-icon="dashboard" data-label="Dashboard"></button>
@@ -248,7 +255,27 @@ const SUPABASE_URL = "https://fdxzsszqwoturvkxmxas.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_nmHZzscFNlAIpf7PDgLWGg_AWBK9cco";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 const $ = id => document.getElementById(id);
-let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], gradeLedgerRows=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null;
+let currentUser=null, profile=null, students=[], classes=[], subjects=[], components=[], interactiveTopics=[], gradeLedgerRows=[], currentPage='dashboard', realtimeChannel=null, lastReport=[], rosterPhotoUrl=null, editingComponentId=null, selectedSubjectId=null, deferredInstallPrompt=null;
+const installButtons=[...document.querySelectorAll('[data-install-app]')];
+const setInstallStatus=message=>{const status=$('installStatus');if(status)status.textContent=message;};
+const notifyInstallResult=(message,type='info')=>{setInstallStatus(message);if(!$('appView').classList.contains('hidden'))alertBox(message,type);};
+function setInstallButtonsVisible(visible){installButtons.forEach(button=>button.classList.toggle('hidden',!visible));}
+window.addEventListener('beforeinstallprompt',event=>{
+  event.preventDefault();deferredInstallPrompt=event;setInstallButtonsVisible(true);
+  notifyInstallResult('ACADEMIA siap dipasang di perangkat ini.','success');
+});
+window.addEventListener('appinstalled',()=>{
+  deferredInstallPrompt=null;setInstallButtonsVisible(false);notifyInstallResult('ACADEMIA berhasil dipasang. Buka aplikasinya dari layar utama.','success');
+});
+installButtons.forEach(button=>button.addEventListener('click',async()=>{
+  if(!deferredInstallPrompt)return;
+  const promptEvent=deferredInstallPrompt;deferredInstallPrompt=null;setInstallButtonsVisible(false);installButtons.forEach(item=>item.disabled=true);
+  try{
+    await promptEvent.prompt();const {outcome}=await promptEvent.userChoice;
+    notifyInstallResult(outcome==='accepted'?'Pemasangan dimulai. Ikon ACADEMIA akan muncul di layar utama.':'Pemasangan dibatalkan. Anda masih bisa memasang dari menu Chrome ⋮.',outcome==='accepted'?'success':'info');
+  }catch(error){notifyInstallResult('Chrome belum dapat memulai pemasangan. Coba menu Chrome ⋮ lalu pilih Instal aplikasi.','error');console.warn('PWA install prompt failed:',error);}
+  finally{installButtons.forEach(item=>item.disabled=false);}
+}));
 const navIconMarkup={
   dashboard:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
   students:'<path d="M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20"/><circle cx="10" cy="7.5" r="3.5"/><path d="M16.5 4.3a3.5 3.5 0 0 1 0 6.8M20 20v-1.5a3.5 3.5 0 0 0-2.5-3.35"/>',
@@ -965,7 +992,7 @@ function subscribeRealtime(){
 }
 db.auth.getSession().then(({data})=>{if(data.session)startApp(data.session.user);});
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(error=>console.warn('Service worker tidak dapat dipasang:',error)));
+  navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'}).catch(error=>{console.warn('Service worker tidak dapat dipasang:',error);setInstallStatus('Dukungan aplikasi belum aktif. Pastikan semua file PWA sudah diunggah ke situs HTTPS.');});
 }
 </script>
 </body>
