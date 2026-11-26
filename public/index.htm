@@ -166,7 +166,7 @@
         </div>
         <div class="nav-section-label mt-2">Bahan Pembelajaran</div>
         <div class="space-y-1">
-          <button type="button" class="navbtn" data-page="soal-uh" data-icon="questions" data-label="Kumpulan Soal UH"></button>
+          <button type="button" class="navbtn" data-page="soal-uh" data-icon="questions" data-label="Bank Soal"></button>
           <button type="button" class="navbtn" data-page="soal-osn" data-icon="medal" data-label="Soal OSN"></button>
           <button type="button" class="navbtn" data-page="learning-docs" data-icon="book" data-label="Perangkat Pembelajaran"></button>
           <button type="button" class="navbtn" data-page="interactive" data-icon="game" data-label="Ruang Interaktif"></button>
@@ -223,8 +223,8 @@
         </section>
 
         <section id="page-soal-uh" class="page hidden">
-          <div class="mb-4"><h1 class="text-2xl font-bold">Kumpulan Soal UH</h1><p class="muted text-sm">Koleksi soal Ulangan Harian dari Google Drive.</p></div>
-          <div class="card p-5"><h2 class="font-bold mb-2">Folder Google Drive</h2><p id="uhDriveStatus" class="muted text-sm">Folder soal UH sudah dihubungkan. Jika diminta, login ke akun Google yang diberi akses ke folder.</p><a id="uhDriveLink" class="btn primary inline-block mt-4" href="https://drive.google.com/drive/folders/1NlqbzQRojxS9ZF3aISSIB4l41b_vtCM4?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Kumpulan Soal UH</a></div>
+          <div class="mb-4"><h1 class="text-2xl font-bold">Bank Soal</h1><p class="muted text-sm">Kumpulan soal Ulangan Harian dari Google Drive.</p></div>
+          <div class="card p-5"><h2 class="font-bold mb-2">Folder Google Drive</h2><p id="uhDriveStatus" class="muted text-sm">Folder bank soal Ulangan Harian sudah dihubungkan. Jika diminta, login ke akun Google yang diberi akses ke folder.</p><a id="uhDriveLink" class="btn primary inline-block mt-4" href="https://drive.google.com/drive/folders/1NlqbzQRojxS9ZF3aISSIB4l41b_vtCM4?usp=sharing" target="_blank" rel="noopener noreferrer">Buka Bank Soal</a></div>
         </section>
 
         <section id="page-soal-osn" class="page hidden">
@@ -372,7 +372,7 @@ function showPage(page){
   currentPage=page;
   document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));
   $('page-'+page)?.classList.remove('hidden');
-  const pageLabels={dashboard:'Dashboard',students:'Data Siswa',classes:'Manajemen Kelas',grades:'Manajemen Nilai','soal-uh':'Kumpulan Soal UH','soal-osn':'Kumpulan Soal OSN','learning-docs':'Perangkat Pembelajaran',interactive:'Ruang Interaktif',attendance:'Absensi Pertemuan',reports:'Laporan Akademik',notifications:'Notifikasi',audit:'Audit Trail'};
+  const pageLabels={dashboard:'Dashboard',students:'Data Siswa',classes:'Manajemen Kelas',grades:'Manajemen Nilai','soal-uh':'Bank Soal','soal-osn':'Kumpulan Soal OSN','learning-docs':'Perangkat Pembelajaran',interactive:'Ruang Interaktif',attendance:'Absensi Pertemuan',reports:'Laporan Akademik',notifications:'Notifikasi',audit:'Audit Trail'};
   $('breadcrumbPage').textContent=pageLabels[page]||page;
   $('pageTitle').textContent=page==='dashboard'?'Ringkasan Akademik':pageLabels[page]||page;
   document.querySelectorAll('.navbtn[data-page]').forEach(button=>{
