@@ -3,12 +3,16 @@
   "name": "ACADEMIA — Academic Management System",
   "short_name": "ACADEMIA",
   "description": "Sistem manajemen akademik sekolah.",
+  "lang": "id-ID",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#f8fafc",
-  "theme_color": "#21103c",
+  "prefer_related_applications": false,
+  "categories": ["education", "productivity"],
+  "background_color": "#f5f6fa",
+  "theme_color": "#1c2136",
   "icons": [
     {
       "src": "./icons/icon-192.png",
